@@ -60,7 +60,7 @@ function home(){
  const pick=['minsaeng','result','attend'].map(k=>BOARDS.find(b=>b.k===k));
  const my=M.find(m=>m.id===myId());
  const vote=Q.slice(0,3);
- show(h('h1',null,'우리 지역구 의원은 국회에서 무엇을 했을까'),h('p',{class:'muted'},'국회 표결·법안 기록과 유튜브, 언론 보도로 봅니다. 현직 '+M.length+'명.'),inp,list,
+ show(h('h1',null,'우리 지역구 의원은 국회에서 무엇을 했을까'),h('p',{class:'muted'},'국회 표결·법안 기록과 유튜브, 언론 보도로 봅니다. 현직 '+M.length+'명.'),h('div',{class:'sec',style:'margin:12px 0'},h('p',{style:'margin:0'},'이 자료는 공개된 객관적인 자료를 모아 국민들이 쉽게 이해할 수 있도록 표현한 것이며, ',h('b',null,'최종 판단은 보시는 분이 하시는 것입니다.')),h('p',{class:'small muted',style:'margin:0'},'어느 정당이나 의원도 지지하거나 반대하지 않고, 모든 의원에게 같은 기준을 적용합니다. 점수는 공개한 기준으로 계산한 참고값입니다. ',h('a',{href:'#about'},'자료와 기준 보기'))),inp,list,
   my?(()=>{const lv=LAWS[0],v=lv&&(lv.y.includes(my.id)?'찬성':lv.n.includes(my.id)?'반대':lv.a.includes(my.id)?'기권':lv.x.includes(my.id)?'불참':'기록 없음');const s=index().score[my.id];return h('a',{class:'card',href:'#m/'+my.id,style:'margin-top:14px'},h('div',{class:'small muted'},'우리 의원'),h('b',null,my.name+' · '+my.area),h('div',{class:'small'},`활동지수 ${s==null?'–':s.toFixed(1)} · 대표발의 ${fmt(my.rep)}건`),my.recent[0]?h('div',{class:'small muted'},'최근 발의: '+my.recent[0].n):null,lv?h('div',{class:'small muted'},'최근 표결: '+lv.name+' → '+v):null)})():null,
   h('div',{class:'hrow'},h('h2',null,'오늘의 국회 랭킹'),h('a',{class:'small',href:'#ranking'},'전체 보기')),
   h('div',{class:'boards'},pick.map(b=>h('a',{class:'card',href:'#ranking/'+b.k},h('b',null,b.title),h('div',{class:'small muted'},b.sub),h('ol',{class:'mini'},boardRows(b).slice(0,3).map(({m,rank})=>h('li',null,h('span',{class:'tn muted'},rank),' ',m.name,' ',h('span',{class:'small muted'},m.party))))))),
