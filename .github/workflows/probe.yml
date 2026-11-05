@@ -1,0 +1,21 @@
+name: 자료 출처 확인
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - run: |
+          UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36'
+          for u in \
+           'https://www.peti.go.kr/' \
+           'https://www.peti.go.kr/peti/a/nexacro/main.do' \
+           'https://www.assembly.go.kr/portal/main/main.do' \
+           'https://www.assembly.go.kr/portal/bbs/B0000052/list.do?menuNo=600103' \
+           'https://info.nec.go.kr/main/showDocument.xhtml?electionId=0020240410&topMenuId=PC&secondMenuId=PCRI03' \
+           'https://info.nec.go.kr/electioninfo/electionInfo_report.xhtml?electionId=0020240410&requestURI=%2Felectioninfo%2F0020240410%2Fep%2Fepei01.jsp&topMenuId=EP&secondMenuId=EPEI01&menuId=EPEI01&statementId=EPEI01_%231&electionCode=2&cityCode=1100&sggCityCode=-1&townCode=-1&sggTownCode=0&x=1&y=1' \
+           'https://jaesan.newstapa.org/' ; do
+            echo "=== $u"; curl -sSL -m 30 -A "$UA" -o /tmp/o -w '%{http_code} %{content_type} %{size_download} %{url_effective}\n' "$u" || true
+            sed 's/<script[^>]*>.*<\/script>//g' /tmp/o | grep -oE 'href="[^"]*(재산|공보|pdf|jaesan|gazette)[^"]*"|재산[^<]{0,40}|전과[^<]{0,40}|<title>[^<]*' | sort -u | head -25
+          done
+          sed -n 1,5p /tmp/o | cut -c1-500
