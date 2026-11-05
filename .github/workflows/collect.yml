@@ -22,6 +22,12 @@ jobs:
         env:
           ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
         run: node scripts/collect.mjs
+      - name: 법안 상세 수집
+        if: always()
+        continue-on-error: true
+        env:
+          ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
+        run: node scripts/laws.mjs
       - name: 유튜브 수집
         if: always()
         continue-on-error: true
