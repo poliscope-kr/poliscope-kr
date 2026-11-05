@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 const H = { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json', Referer: 'https://open.assembly.go.kr/portal/openapi/main.do' };
 const cat = await (await fetch('https://open.assembly.go.kr/portal/openapi/selectInfsOpenApiListPaging.do?page=1&rows=400&schVOrder=D', { headers: H })).json();
 console.log('API 수', cat.data?.length);
-const want = /국외|출장|업무추진비|비용추계|정치자금|재산|예비금|특수활동|상임위 활동|수당|세비|국민동의청원/;
+const want = /국외|출장|연구단체|의원연구|입법정책|정책개발|의원외교|친선|세미나|토론회|공약|청원|법률안 공포|결산/;
 const out = [];
 for (const it of cat.data || []) {
   if (!want.test(it.infaNm || '')) continue;
