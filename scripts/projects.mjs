@@ -37,7 +37,8 @@ const groups = reg.map(g => {
   const researchYears = sp.filter(s => s.research > 0).map(s => s.y);
   const has = (kind, y) => rp.some(r => kind.test(r.c) && (r.y === y || Number(r.y) === Number(y) + 1));
   const RES = /결과보고서/, PLAN = /계획서/, STUDY = /정책연구|연구용역/;
-  const resultOk = spentYears.filter(y => has(RES, y)), planOk = spentYears.filter(y => rp.some(r => PLAN.test(r.c) && r.y === y)), studyOk = researchYears.filter(y => has(STUDY, y));
+  const hasRes = y => rp.some(r => RES.test(r.c) && (r.t.match(/(20\d\d)년/)?.[1] || r.y) === y);
+  const resultOk = spentYears.filter(hasRes), planOk = spentYears.filter(y => rp.some(r => PLAN.test(r.c) && r.y === y)), studyOk = researchYears.filter(y => has(STUDY, y));
   // 공개 기록 점수: 연구의 질이 아니라 돈을 쓴 해에 공개 기록이 남았는지만 본다. 집행 기록이 없으면 평가하지 않는다.
   let score = null, parts = [];
   if (spentYears.length) { const r1 = resultOk.length / spentYears.length, r2 = planOk.length / spentYears.length, r3 = researchYears.length ? studyOk.length / researchYears.length : null, a1 = aw.length ? 1 : 0; const w3 = r3 == null ? 0 : 30, base = 40 + 15 + w3 + 15; score = Math.round((r1 * 40 + r2 * 15 + (r3 ?? 0) * w3 + a1 * 15) / base * 100); parts = [['결과보고서 공개', Math.round(r1 * 40), 40], ['활동계획서 공개', Math.round(r2 * 15), 15], ...(r3 == null ? [] : [['정책연구비 쓴 해의 연구 보고서', Math.round(r3 * 30), 30]]), ['우수 연구단체 선정', a1 * 15, 15]]; }
@@ -45,7 +46,7 @@ const groups = reg.map(g => {
   if (aw.length) good.push(`국회 선정 수상 ${[...new Set(aw.map(a => a.y))].join(', ')}년`);
   if (resultOk.length) good.push(`결과보고서 공개 (${resultOk.join(', ')}년 집행분)`);
   const studies = rp.filter(r => STUDY.test(r.c)).length; if (studies) good.push(`정책연구·용역 보고서 ${studies}건 공개`);
-  const noRes = spentYears.filter(y => !has(RES, y)); if (noRes.length) bad.push(`${noRes.join(', ')}년 집행분의 결과보고서를 찾지 못함`);
+  const noRes = spentYears.filter(y => !hasRes(y)); if (noRes.length) bad.push(`${noRes.join(', ')}년 집행분의 결과보고서를 찾지 못함`);
   const noStudy = researchYears.filter(y => !has(STUDY, y)); if (noStudy.length) bad.push(`${noStudy.join(', ')}년 정책연구비 집행 기록이 있으나 연구 보고서를 찾지 못함`);
   if (!sp.length) bad.push('집행 내역 없음. 2026년 이후 등록 단체이거나 이름 불일치일 수 있어 평가하지 않음');
   return { name: g.RE_NAME, topic: g.RE_TOPIC_NAME || '', goal: clean(g.RE_OBJECTIVE).slice(0, 500), lead: namesIn(g.MAIN_MEM), head: namesIn(g.RE_MEM), crew: namesIn(g.OBJ_MEM), leadText: g.MAIN_MEM || '', count: g.MEMBER_CNT || '', url: g.LINK_URL || '', spend: sp, total, reports: rp.slice(0, 15), reportCount: rp.length, awards: aw, score, parts, good, bad };

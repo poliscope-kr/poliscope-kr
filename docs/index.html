@@ -111,7 +111,7 @@ const BOARDS=[
 function boardRows(b,party){const a=M.filter(m=>b.val(m)!=null&&(!party||m.party===party)).sort((p,q)=>b.val(q)-b.val(p)||((b.tie?b.tie(q):0)-(b.tie?b.tie(p):0))||p.name.localeCompare(q.name,'ko'));let rank=0,prev=null;return a.map((m,i)=>{const key=b.val(m)+'|'+(b.tie?b.tie(m):'');if(key!==prev){rank=i+1;prev=key}return{m,rank}})}
 function boardRow({m,rank},b){return h('li',null,h('span',{class:'tn muted'},rank),h('a',{href:'#m/'+m.id},m.name,' ',h('span',{class:'small muted',style:'font-weight:400'},m.party+' · '+m.area)),h('span',{class:'tn small'},b.show(m)))}
 function tripCard(t){return h('div',{class:'card'},h('div',null,t.to||'목적지 미기재',h('span',{class:'small muted'},' · '+t.when)),t.why?h('div',{class:'small'},t.why):null,h('div',{class:'small muted'},'경비 지원: '+(t.paid||'미기재')+(t.report?' · 결과보고서: '+t.report:'')))}
-const won=v=>v>=1e8?(v/1e8).toFixed(1).replace('.0','')+'억 원':v>=1e4?fmt(Math.round(v/1e4))+'만 원':fmt(v)+' 원';
+const won=v=>v>=1e8?(v/1e8).toFixed(1).replace('.0','')+'억 원':v>=1e4?fmt(Math.round(v/1e4))+'만 원':fmt(v)+'원';
 const scoreTag=g=>g.score==null?h('span',{class:'small muted'},'평가 불가'):h('b',{class:'tn'},g.score+'점');
 const pjCard=g=>h('a',{class:'card',href:'#project/'+PJ.groups.indexOf(g)},h('div',{style:'display:flex;justify-content:space-between;gap:12px'},h('b',null,g.name),scoreTag(g)),h('div',{class:'small muted'},`${g.topic} · 대표 ${g.leadText||'미기재'}`),h('div',{class:'small muted'},`기록된 집행 ${g.total?won(g.total):'없음'} · 보고서 ${g.reportCount}건`));
 const PJ_RULE='돈을 쓴 해의 공개 기록을 봅니다. 결과보고서 40, 정책연구비를 쓴 해의 연구 보고서 30, 활동계획서 15, 국회 선정 수상 15를 100점으로 환산합니다. 연구의 질이나 성과를 평가한 점수가 아니고, 집행 기록이 없으면 평가하지 않습니다. 보고서 연도 표기가 달라 잘못 나올 수 있으니 원문과 함께 보세요.';
