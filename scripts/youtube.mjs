@@ -38,11 +38,13 @@ async function resolve(c) {
 }
 const secs = d => { const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(d || ''); return m ? (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0) : null; };
 const members = JSON.parse(readFileSync(`${OUT}/members.json`, 'utf8'));
+const FIELDS = existsSync(`${OUT}/fields.json`) ? Object.entries(JSON.parse(readFileSync(`${OUT}/fields.json`, 'utf8'))).map(([k, f]) => [k, new RegExp(f.words.join('|'))]) : [];
 const channels = existsSync(CACHE) ? JSON.parse(readFileSync(CACHE, 'utf8')) : {};
 const prev = existsSync(`${OUT}/youtube.json`) ? JSON.parse(readFileSync(`${OUT}/youtube.json`, 'utf8')).members || {} : {};
 const SINCE = Date.now() - 365 * 864e5;
 const out = {}; let unresolved = [], failed = 0, quota = false;
-for (const m of members) {
+// 할당량에 걸려도 뒷순서 의원이 계속 밀리지 않도록 분야 집계가 없는 의원부터 받는다.
+for (const m of [...members].sort((a, b) => !!prev[a.id]?.topics - !!prev[b.id]?.topics)) {
   const url = m.sns?.youtube; if (!url) continue;
   try {
     let ch = channels[url];
@@ -64,7 +66,9 @@ for (const m of members) {
     for (const v of vids) { const k = String(v.at).slice(0, 7); months[k] = months[k] || { l: 0, s: 0 }; if (v.s != null && v.s <= 180) { months[k].s++; shorts++; } else { months[k].l++; longs++; } }
     // 활동 점수: 달마다 긴 영상 1, 짧은 영상 0.25로 세고 월 4점에서 멈춘다. 많이 올린다고 끝없이 오르지 않는다.
     const pts = Object.values(months).reduce((a, x) => a + Math.min(4, x.l + x.s * .25), 0);
-    out[m.id] = { url, title: ch.title, longs, shorts, lastAt: vids.map(v => v.at).sort().pop() || null, activeMonths: Math.min(12, Object.keys(months).length), online: Math.min(100, Math.round(pts / 48 * 1000) / 10),
+    // 법안 분야와 같은 공개 단어로 영상 제목을 센다. 해시태그도 제목의 일부로 본다.
+    const topics = {}; for (const v of vids) for (const [k, re] of FIELDS) if (re.test(v.t)) topics[k] = (topics[k] || 0) + 1;
+    out[m.id] = { topics, total: vids.length, url, title: ch.title, longs, shorts, lastAt: vids.map(v => v.at).sort().pop() || null, activeMonths: Math.min(12, Object.keys(months).length), online: Math.min(100, Math.round(pts / 48 * 1000) / 10),
       recent: vids.sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 5).map(v => ({ t: v.t, id: v.id, d: String(v.at).slice(0, 10), short: v.s != null && v.s <= 180 })) };
   } catch (e) {
     if (e instanceof QuotaError) { quota = true; console.log('할당량 초과로 중단'); break; }
