@@ -5,18 +5,20 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: collect
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: 수집
+        id: collect
         env:
           ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
         run: node scripts/collect.mjs
@@ -27,3 +29,8 @@ jobs:
           git add docs/data data
           git diff --cached --quiet || git commit -m "자료 갱신 $(date -u +%F)"
           git push
+      - name: 남은 표결 이어 받기
+        if: steps.collect.outputs.incomplete == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run collect.yml --ref main
