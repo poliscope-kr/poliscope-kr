@@ -1,0 +1,236 @@
+[
+ {
+  "name": "국회기록원 업무추진비 집행현황",
+  "service": "OPNZLSTNARA",
+  "request": [
+   "PRDC_YM_NM:생산년월",
+   "OPB_FL_NM:공개파일명",
+   "INST_NM:기관명"
+  ],
+  "output": [
+   "PRDC_YM_NM:생산년월",
+   "OPB_FL_NM:공개파일명",
+   "INST_CD:기관코드",
+   "INST_NM:기관명",
+   "OPB_FL_PH:공개파일경로",
+   "FILE_ID:파일ID"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "NABO 비용추계 및 재정전망",
+  "service": "npsofwddayuhqhfgh",
+  "request": [
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명"
+  ],
+  "output": [
+   "REG_DATE:발간일",
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명",
+   "LINK_URL:링크 주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회예산정책처 업무추진비 집행현황",
+  "service": "nknmvzexapgiarqcd",
+  "request": [
+   "PRDC_YM:생산년월",
+   "OPB_FL_NM:공개파일명"
+  ],
+  "output": [
+   "PRDC_YM_NM:생산년월",
+   "OPB_FL_NM:공개파일명",
+   "INST_CD:기관코드",
+   "INST_NM:기관명",
+   "OPB_FL_PH:공개파일경로",
+   "FILE_ID:파일ID"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회입법조사처 업무추진비 집행현황",
+  "service": "nlmqzojlayoicbxhw",
+  "request": [
+   "PRDC_YM_NM:생산년월",
+   "OPB_FL_NM:공개파일명",
+   "INST_NM:기관명"
+  ],
+  "output": [
+   "PRDC_YM_NM:생산년월",
+   "OPB_FL_NM:공개파일명",
+   "INST_CD:기관코드",
+   "INST_NM:기관명",
+   "OPB_FL_PH:공개파일경로",
+   "FILE_ID:파일ID"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회도서관 업무추진비 집행현황",
+  "service": "ngqoyjbkaxutcpmot",
+  "request": [
+   "PRDC_YM:생산년월",
+   "OPB_FL_NM:공개파일명"
+  ],
+  "output": [
+   "PRDC_YM_NM:생산년월",
+   "OPB_FL_NM:공개파일명",
+   "INST_CD:기관코드",
+   "INST_NM:기관명",
+   "OPB_FL_PH:공개파일경로",
+   "FILE_ID:파일ID"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회사무처 업무추진비 집행현황",
+  "service": "nalacaiwauxiynsxt",
+  "request": [
+   "PRDC_YM_NM:생산년월",
+   "OPB_FL_NM:공개파일명"
+  ],
+  "output": [
+   "PRDC_YM_NM:생산년월",
+   "OPB_FL_NM:공개파일명",
+   "INST_CD:기관코드",
+   "INST_NM:기관명",
+   "OPB_FL_PH:공개파일경로",
+   "FILE_ID:파일ID"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회의원 상임위 활동",
+  "service": "nuvypcdgahexhvrjt",
+  "request": [
+   "DAE_NUM:대수*",
+   "SES_NUM:회기",
+   "DEGREE_NUM:차수",
+   "COMM_NAME:위원회",
+   "CONF_DATE:회의일",
+   "CLASS_NAME:회의종류"
+  ],
+  "output": [
+   "DAE_NUM:대수",
+   "SES_NUM:회기",
+   "DEGREE_NUM:차수",
+   "COMM_NAME:위원회",
+   "CONF_DATE:회의일",
+   "BILL_URL:안건보기",
+   "CLASS_NAME:회의종류"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회의원 직무상 국외활동 신고 내역",
+  "service": "nasnutdbapnfphwyr",
+  "request": [
+   "UNIT_CD:대별코드",
+   "PN:성명",
+   "SCH_DYS:일정",
+   "DSTN_NM:목적지",
+   "UNIT_NM:대"
+  ],
+  "output": [
+   "UNIT_CD:대별코드",
+   "PN:성명",
+   "PURP_RSON:목적사유",
+   "SCH_DYS:일정",
+   "DSTN_NM:목적지",
+   "EXPNS_SUPPT_INST_NM:경비지원기관",
+   "REPORT_YN:결과보고서",
+   "UNIT_NM:대"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ }
+]
