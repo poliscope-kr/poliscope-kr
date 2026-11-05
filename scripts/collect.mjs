@@ -165,20 +165,30 @@ try {
 } catch (e) { warnings.push(`SNS 주소를 받지 못했습니다: ${e.message}`); }
 
 // 3-3. 세금아 세금아 어디로 갔니?: 공개 자료 (실패해도 나머지 수집은 계속)
+function tripDays(v) {
+  const m = String(v || '').match(/(\d{4})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})\D*?(?:[~∼-]\s*(?:(\d{4})\s*[.\-/년]\s*)?(\d{1,2})\s*[.\-/월]\s*(\d{1,2}))?\D*$/);
+  if (!m) return { days: null, at: 0 };
+  const [y, mo, d] = [+m[1], +m[2], +m[3]], at = Date.UTC(y, mo - 1, d);
+  if (!m[5]) return { days: 1, at };
+  const y2 = m[4] ? +m[4] : (+m[5] < mo ? y + 1 : y), end = Date.UTC(y2, +m[5] - 1, +m[6]), days = Math.round((end - at) / 864e5) + 1;
+  return { days: days > 0 && days < 120 ? days : null, at };
+}
 const tax = { updated: new Date().toISOString(), trips: {}, tripRows: 0, tripUnmatched: 0, nabo: [], spend: [] };
 try {
-  const rows = await getAll('nasnutdbapnfphwyr', { UNIT_CD: '100' + AGE });
+  const rows = await getAll('nasnutdbapnfphwyr', { UNIT_CD: '1000' + AGE });
   log(`국외활동 ${rows.length}건, 예시 일정: ${rows.slice(0, 3).map(r => r.SCH_DYS).join(' / ')}`);
   tax.tripRows = rows.length;
   for (const r of rows) {
-    const code = byName[String(r.PN || '').trim()]; if (!code) { tax.tripUnmatched++; continue; }
-    const ds = String(r.SCH_DYS || '').match(/\d{4}[.\-/년]\s*\d{1,2}[.\-/월]\s*\d{1,2}/g) || [];
-    const dt = ds.map(d => { const [y, mo, da] = d.match(/\d+/g).map(Number); return Date.UTC(y, mo - 1, da); });
-    const days = dt.length >= 2 && dt[1] >= dt[0] ? Math.round((dt[1] - dt[0]) / 864e5) + 1 : dt.length === 1 ? 1 : null;
-    const t = tax.trips[code] = tax.trips[code] || { n: 0, days: 0, unknownDays: 0, list: [] };
-    t.n++; if (days == null) t.unknownDays++; else t.days += days;
-    t.list.push({ when: r.SCH_DYS || '', to: r.DSTN_NM || '', why: r.PURP_RSON || '', paid: r.EXPNS_SUPPT_INST_NM || '', report: r.REPORT_YN || '', at: dt[0] || 0 });
+    const { days, at } = tripDays(r.SCH_DYS);
+    const codes = String(r.PN || '').split(/[,，、·\s]+/).map(x => x.trim()).filter(Boolean).map(n => byName[n]);
+    tax.tripUnmatched += codes.filter(c => !c).length;
+    for (const code of new Set(codes.filter(Boolean))) {
+      const t = tax.trips[code] = tax.trips[code] || { n: 0, days: 0, unknownDays: 0, list: [] };
+      t.n++; if (days == null) t.unknownDays++; else t.days += days;
+      t.list.push({ when: r.SCH_DYS || '', to: r.DSTN_NM === '목적지' ? '' : r.DSTN_NM || '', why: r.PURP_RSON || '', paid: r.EXPNS_SUPPT_INST_NM || '', report: r.REPORT_YN || '', at });
+    }
   }
+  const all = Object.values(tax.trips); log(`국외활동 연결 의원 ${all.length}명, 일수 미상 ${all.reduce((a, t) => a + t.unknownDays, 0)}, 이름 미연결 ${tax.tripUnmatched}`);
   for (const t of Object.values(tax.trips)) { t.list.sort((a, b) => b.at - a.at); t.list.forEach(x => delete x.at); }
 } catch (e) { warnings.push(`국외활동 자료를 받지 못했습니다: ${e.message}`); }
 try { const rows = await getAll('npsofwddayuhqhfgh'); tax.nabo = rows.sort((a, b) => String(b.REG_DATE).localeCompare(String(a.REG_DATE))).slice(0, 6).map(r => ({ d: r.REG_DATE, t: r.SUBJECT, u: r.LINK_URL })); } catch (e) { log('NABO 자료 실패: ' + e.message); }
