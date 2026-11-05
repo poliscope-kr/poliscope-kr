@@ -80,12 +80,18 @@ log(`법안 ${bills.length}건`);
 need('법안', bills[0], ['BILL_ID', 'BILL_NAME', 'PROC_RESULT', 'COMMITTEE', 'PROPOSE_DT']);
 let unmatched = 0, homonymDropped = 0; const unmatchedNames = {};
 for (const b of bills) {
-  const code = b.RST_MONA_CD && stats[b.RST_MONA_CD] ? b.RST_MONA_CD : byName[String(b.RST_PROPOSER || '').trim()];
-  if (!code) { const n = String(b.RST_PROPOSER || '').trim(); if (nameCount[n] > 1) homonymDropped++; else { unmatched++; unmatchedNames[n] = (unmatchedNames[n] || 0) + 1; } continue; }
-  const s = stats[code]; s.rep++;
-  if (PASS.test(b.PROC_RESULT || '')) s.passed++;
-  if (b.COMMITTEE) { s.cmitBills++; if (cmitsOf(codeToM[code]).includes(b.COMMITTEE)) s.inCmit++; }
-  s.recent.push({ n: b.BILL_NAME, d: b.PROPOSE_DT, r: b.PROC_RESULT || '계류', u: b.DETAIL_LINK || '' });
+  // 공동 대표발의는 대표발의자 모두에게 1건씩 센다
+  const names = String(b.RST_PROPOSER || '').split(/[,，]/).map(n => n.trim()).filter(Boolean);
+  const codes = new Set();
+  if (b.RST_MONA_CD && stats[b.RST_MONA_CD]) codes.add(b.RST_MONA_CD);
+  for (const n of names) { if (names.length > 1 || !codes.size) { if (byName[n]) codes.add(byName[n]); else if (nameCount[n] > 1 && !codes.size) homonymDropped++; } }
+  if (!codes.size) { if (!names.some(n => nameCount[n] > 1)) { unmatched++; const n = names.join(','); unmatchedNames[n] = (unmatchedNames[n] || 0) + 1; } continue; }
+  for (const code of codes) {
+    const s = stats[code]; s.rep++;
+    if (PASS.test(b.PROC_RESULT || '')) s.passed++;
+    if (b.COMMITTEE) { s.cmitBills++; if (cmitsOf(codeToM[code]).includes(b.COMMITTEE)) s.inCmit++; }
+    s.recent.push({ n: b.BILL_NAME, d: b.PROPOSE_DT, r: b.PROC_RESULT || '계류', u: b.DETAIL_LINK || '' });
+  }
 }
 if (homonymDropped) warnings.push(`동명이인을 구분하지 못한 대표발의 법안 ${homonymDropped}건은 계산에서 뺐습니다.`);
 if (unmatched) warnings.push(`대표발의자가 현직 의원이 아닌 법안 ${unmatched}건은 계산에서 뺐습니다(사직 의원, 위원장 대안 등).`);
