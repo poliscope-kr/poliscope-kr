@@ -31,13 +31,14 @@ footer{margin-top:30px;padding-top:12px;border-top:1px solid var(--line);font-si
 const $=id=>document.getElementById(id);
 const show=(...k)=>$('m').replaceChildren(...k.flat(Infinity).filter(x=>x!=null&&x!==false));
 function h(t,p,...k){const e=document.createElement(t);for(const[a,v]of Object.entries(p||{})){if(v==null||v===false)continue;if(a.startsWith('on'))e[a]=v;else if(a==='value')e.value=v;else e.setAttribute(a,v)}for(const c of k.flat())if(c!=null&&c!==false)e.append(c.nodeType?c:String(c));return e}
-let M=[],Q=[],META=null;const safe=u=>/^https?:\/\//.test(u||'')?u:null;
+let M=[],Q=[],META=null,NOTES={};const safe=u=>/^https?:\/\//.test(u||'')?u:null;
 const METRICS=[{k:'voteAdj',w0:1,label:'표결 참여율 (당 집단 불참 제외)',unit:'%',desc:'같은 정당 의원 절반 이상이 함께 불참한 표결을 뺀 참여율. 개인 사유와 당 차원의 불참을 나누어 보기 위한 수치입니다. 장관 겸직, 국회의장, 청가·공무 출장은 구분되지 않습니다.'},{k:'voteRate',w0:0,label:'표결 참여율 (전체)',unit:'%',desc:'자신이 대상이었던 본회의 전자표결 중 불참이 아닌 비율. 당 차원의 불참도 그대로 포함되어 정당별 차이가 크게 나타납니다.'},{k:'rep',w0:1,label:'대표발의 법안 수',unit:'건',desc:'대표발의한 제22대 법안 수. 수가 많다고 질이 높다는 뜻은 아닙니다.'},{k:'passRate',w0:1,label:'대표발의 법안 반영률',unit:'%',desc:'대표발의 법안 중 가결·대안반영 비율. 5건 이상일 때만 계산합니다. 계류 중인 법안이 많으면 낮게 나옵니다.'},{k:'focus',w0:0,label:'현재 위원회 법안 비중',unit:'%',desc:'대표발의 법안 중 현재 소속 위원회 소관 비율. 5건 이상일 때만 계산합니다. 위원회를 옮기면 크게 낮아져 전문성 지표로 보기 어려워, 기본 순위에서는 뺐습니다.'}];
 const norm=s=>(s||'').replace(/\s/g,'').toLowerCase();
 function ranks(k){const a=M.filter(x=>x[k]!=null).sort((p,q)=>q[k]-p[k]);const r={};let cur=0,prev=null;a.forEach((x,i)=>{if(x[k]!==prev){cur=i+1;prev=x[k]}r[x.id]=cur});return{r,n:a.length}}
 function pctile(k){const a=M.filter(x=>x[k]!=null).map(x=>x[k]).sort((p,q)=>p-q);const m={};M.forEach(x=>{if(x[k]==null)return;let c=0;for(const v of a)if(v<=x[k])c++;m[x.id]=c/a.length*100});return m}
 function mc(m){return h('a',{class:'card',href:'#m/'+m.id},h('div',{class:'row'},h('span',{class:'name'},m.name),h('span',{class:'muted small'},m.party)),h('div',{class:'small muted'},m.area+' · '+m.terms))}
 
+const fix=t=>h('p',{class:'small'},h('a',{href:'https://github.com/poliscope-kr/poliscope-kr/issues/new?template=correction.yml&title='+encodeURIComponent(t),target:'_blank',rel:'noopener'},'틀린 정보 정정 요청하기'));
 function home(){
  const list=h('div'),inp=h('input',{type:'search',id:'s',placeholder:'지역구나 이름 (예: 강남, 수원, 비례대표)','aria-label':'지역구나 이름 찾기',oninput:()=>fill()});
  function fill(){const q=norm(inp.value);list.textContent='';if(!q)return;const r=M.filter(m=>norm(m.area).includes(q)||norm(m.name).includes(q));list.append(h('p',{class:'small muted'},r.length+'명'),...r.slice(0,60).map(mc));if(r.length>60)list.append(h('p',{class:'small muted'},'앞의 60명만 보여 줍니다. 더 자세히 입력하세요.'))}
@@ -50,10 +51,10 @@ function member(id){
  show(h('h1',null,m.name),h('div',{class:'muted'},m.party+' · '+m.area+' · '+m.terms),
   h('div',{class:'chips'},m.cmits.map(c=>h('span',{class:'chip'},c))),
   h('div',{class:'grid'},METRICS.map(x=>{const v=m[x.k],{r,n}=ranks(x.k);return h('div',{class:'stat'},h('b',null,v==null?'–':v.toLocaleString('ko-KR')+x.unit),h('span',null,x.label),h('i',null,v==null?'자료 부족':n+'명 중 '+r[m.id]+'위'))})),
-  /의장/.test(m.role)?h('div',{class:'note'},'국회의장은 관례상 표결에 참여하지 않아 표결 참여율을 그대로 비교하기 어렵습니다.'):null,
+  NOTES[m.name]?h('div',{class:'note'},NOTES[m.name].text,' ',safe(NOTES[m.name].source)?h('a',{href:NOTES[m.name].source,target:'_blank',rel:'noopener'},'출처'):null):null,
   h('h2',null,'본회의 표결 기록'),h('p',{class:'tn'},`찬성 ${m.y} · 반대 ${m.n} · 기권 ${m.a} · 불참 ${m.x} (총 ${m.voteTotal}건)`),m.groupBills?h('p',{class:'small muted'},`이 중 ${m.groupBills}건은 같은 정당 의원 절반 이상이 함께 불참한 표결입니다.`):null,
   h('h2',null,'최근 대표발의 법안'),m.recent.length?m.recent.map(b=>{const u=safe(b.u);return h(u?'a':'div',{class:'card',href:u,target:u?'_blank':null,rel:u?'noopener':null},h('div',null,b.n),h('div',{class:'small muted'},(b.d||'')+' · '+b.r))}):h('p',{class:'muted'},'대표발의 기록이 없거나 연결하지 못했습니다.'),
-  h('h2',null,'연락처'),h('p',null,m.tel||'–',' ',safe(m.web)?h('a',{href:m.web,target:'_blank',rel:'noopener'},'홈페이지'):null))}
+  h('h2',null,'연락처'),h('p',null,m.tel||'–',' ',safe(m.web)?h('a',{href:m.web,target:'_blank',rel:'noopener'},'홈페이지'):null),fix('[정정] '+m.name))}
 
 function rank(){
  const w={};METRICS.forEach(x=>w[x.k]=x.w0);const P=Object.fromEntries(METRICS.map(x=>[x.k,pctile(x.k)]));const ol=h('ol',{class:'rank'});
@@ -78,11 +79,11 @@ function quiz(){
 function about(){
  show(h('h1',null,'자료와 계산 방법'),h('p',null,'모든 수치는 열린국회정보 Open API의 공개 자료를 하루 한 번 받아 같은 규칙으로 계산합니다. 사람이나 AI가 의원을 판정하지 않습니다.'),METRICS.map(x=>h('div',{class:'card'},h('b',null,x.label),h('div',{class:'small muted'},x.desc))),
   h('h2',null,'표결 궁합 문항은 어떻게 고르나요'),h('p',null,'본회의 표결 가운데 찬성·반대를 합쳐 100명 이상 참여했고 소수 쪽이 15% 이상인 의안을 최근순으로 뽑습니다.'),
-  h('h2',null,'한계'),h('p',null,'지역구 활동, 상임위 질의, 법안의 질은 이 수치에 담기지 않습니다. 오류를 발견하면 원문 기록으로 확인해 주세요.'),META&&META.warnings.length?h('div',{class:'note'},META.warnings.map(w=>h('div',null,w))):null,h('p',null,h('a',{href:'https://open.assembly.go.kr',target:'_blank',rel:'noopener'},'열린국회정보')))}
+  h('h2',null,'한계'),h('p',null,'지역구 활동, 상임위 질의, 법안의 질은 이 수치에 담기지 않습니다. 오류를 발견하면 원문 기록으로 확인해 주세요.'),META&&META.warnings.length?h('div',{class:'note'},META.warnings.map(w=>h('div',null,w))):null,h('p',null,h('a',{href:'https://open.assembly.go.kr',target:'_blank',rel:'noopener'},'열린국회정보')),fix('[정정] '))}
 
 const ROUTES=[['home','찾기'],['quiz','표결 궁합'],['rank','내 기준 순위'],['about','자료·방법']];
 function go(){const r=(location.hash||'#home').slice(1);$('nav').replaceChildren(...ROUTES.map(([k,l])=>h('a',{href:'#'+k,class:r===k?'on':null},l)));
  if(r.startsWith('m/'))member(r.slice(2));else if(r==='quiz')quiz();else if(r==='rank')rank();else if(r==='about')about();else home();scrollTo(0,0)}
-(async()=>{try{const g=u=>fetch(u,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json()});[M,Q,META]=await Promise.all([g('data/members.json'),g('data/quiz.json'),g('data/meta.json')]);$('f').textContent='자료 기준: '+new Date(META.updated).toLocaleString('ko-KR')+' · 출처: 열린국회정보 · 의원·정당과 무관한 민간 정보 서비스';addEventListener('hashchange',go);go()}catch{show(h('h1',null,'자료를 준비하고 있습니다'),h('p',{class:'muted'},'첫 수집이 끝나면 의원 정보가 표시됩니다.'))}})();
+(async()=>{try{const g=u=>fetch(u,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json()});[M,Q,META,NOTES]=await Promise.all([g('data/members.json'),g('data/quiz.json'),g('data/meta.json'),g('notes.json').catch(()=>({}))]);$('f').textContent='자료 기준: '+new Date(META.updated).toLocaleString('ko-KR')+' · 출처: 열린국회정보 · 의원·정당과 무관한 민간 정보 서비스';addEventListener('hashchange',go);go()}catch{show(h('h1',null,'자료를 준비하고 있습니다'),h('p',{class:'muted'},'첫 수집이 끝나면 의원 정보가 표시됩니다.'))}})();
 })();
 </script></body></html>

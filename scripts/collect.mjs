@@ -67,7 +67,6 @@ need('의원', rawMembers[0], ['HG_NM', 'POLY_NM', 'ORIG_NM', 'MONA_CD', 'REELE_
 if (rawMembers.length < 250) throw new Error(`의원 수가 ${rawMembers.length}명뿐이라 저장을 중단합니다.`);
 const nameCount = {}; rawMembers.forEach(m => nameCount[m.HG_NM] = (nameCount[m.HG_NM] || 0) + 1);
 const homonyms = Object.keys(nameCount).filter(n => nameCount[n] > 1);
-if (homonyms.length) warnings.push(`동명이인 ${homonyms.join(', ')}: 이름으로만 구분되는 발의 자료는 계산에서 뺐습니다.`);
 const byName = Object.fromEntries(rawMembers.filter(m => nameCount[m.HG_NM] === 1).map(m => [m.HG_NM, m.MONA_CD]));
 const stats = {};
 rawMembers.forEach(m => stats[m.MONA_CD] = { rep: 0, passed: 0, inCmit: 0, cmitBills: 0, y: 0, n: 0, a: 0, x: 0, recent: [] });
@@ -79,16 +78,18 @@ log('법안 목록 받는 중');
 const bills = await getAll(API.bills, { AGE }, false);
 log(`법안 ${bills.length}건`);
 need('법안', bills[0], ['BILL_ID', 'BILL_NAME', 'PROC_RESULT', 'COMMITTEE', 'PROPOSE_DT']);
-let unmatched = 0;
+let unmatched = 0, homonymDropped = 0; const unmatchedNames = {};
 for (const b of bills) {
   const code = b.RST_MONA_CD && stats[b.RST_MONA_CD] ? b.RST_MONA_CD : byName[String(b.RST_PROPOSER || '').trim()];
-  if (!code) { unmatched++; continue; }
+  if (!code) { const n = String(b.RST_PROPOSER || '').trim(); if (nameCount[n] > 1) homonymDropped++; else { unmatched++; unmatchedNames[n] = (unmatchedNames[n] || 0) + 1; } continue; }
   const s = stats[code]; s.rep++;
   if (PASS.test(b.PROC_RESULT || '')) s.passed++;
   if (b.COMMITTEE) { s.cmitBills++; if (cmitsOf(codeToM[code]).includes(b.COMMITTEE)) s.inCmit++; }
   s.recent.push({ n: b.BILL_NAME, d: b.PROPOSE_DT, r: b.PROC_RESULT || '계류', u: b.DETAIL_LINK || '' });
 }
-if (unmatched) warnings.push(`대표발의자를 현직 의원과 연결하지 못한 법안 ${unmatched}건은 뺐습니다(사직·동명이인·위원장 대안 등).`);
+if (homonymDropped) warnings.push(`동명이인을 구분하지 못한 대표발의 법안 ${homonymDropped}건은 계산에서 뺐습니다.`);
+if (unmatched) warnings.push(`대표발의자가 현직 의원이 아닌 법안 ${unmatched}건은 계산에서 뺐습니다(사직 의원, 위원장 대안 등).`);
+log('연결 안 된 대표발의자 상위: ' + Object.entries(unmatchedNames).sort((a, b) => b[1] - a[1]).slice(0, 25).map(([n, c]) => `${n || '(없음)'} ${c}`).join(', '));
 
 // 3. 본회의 표결 (이미 받은 것은 다시 받지 않음)
 const cache = existsSync(CACHE) ? JSON.parse(readFileSync(CACHE, 'utf8')) : {};

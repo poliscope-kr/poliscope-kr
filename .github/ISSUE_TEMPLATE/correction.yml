@@ -1,0 +1,31 @@
+name: 정정 요청
+description: 사이트의 정보가 틀렸을 때 알려 주세요.
+title: "[정정] "
+labels: []
+body:
+  - type: input
+    id: member
+    attributes:
+      label: 의원 이름 또는 화면
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: 틀린 내용
+      description: 화면에 어떻게 나오는지 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: right
+    attributes:
+      label: 맞는 내용
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: 근거 자료 주소
+      description: 국회, 법원, 선관위 등 공식 자료가 가장 좋습니다. 요청 내용은 공개되니 개인정보는 적지 마세요.
+    validations:
+      required: true
