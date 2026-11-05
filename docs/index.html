@@ -32,7 +32,7 @@ const $=id=>document.getElementById(id);
 const show=(...k)=>$('m').replaceChildren(...k.flat(Infinity).filter(x=>x!=null&&x!==false));
 function h(t,p,...k){const e=document.createElement(t);for(const[a,v]of Object.entries(p||{})){if(v==null||v===false)continue;if(a.startsWith('on'))e[a]=v;else if(a==='value')e.value=v;else e.setAttribute(a,v)}for(const c of k.flat())if(c!=null&&c!==false)e.append(c.nodeType?c:String(c));return e}
 let M=[],Q=[],META=null;const safe=u=>/^https?:\/\//.test(u||'')?u:null;
-const METRICS=[{k:'voteRate',label:'본회의 표결 참여율',unit:'%',desc:'자신이 대상이었던 본회의 전자표결 중 불참이 아닌 비율. 청가·공무 출장 사유는 구분되지 않습니다.'},{k:'rep',label:'대표발의 법안 수',unit:'건',desc:'대표발의한 제22대 법안 수. 수가 많다고 질이 높다는 뜻은 아닙니다.'},{k:'passRate',label:'대표발의 법안 반영률',unit:'%',desc:'대표발의 법안 중 가결·대안반영 비율. 5건 이상일 때만 계산합니다. 계류 중인 법안이 많으면 낮게 나옵니다.'},{k:'focus',label:'소속 위원회 법안 비중',unit:'%',desc:'대표발의 법안 중 현재 소속 위원회 소관 비율. 5건 이상일 때만 계산합니다. 위원회를 옮겼다면 낮게 나옵니다.'}];
+const METRICS=[{k:'voteAdj',w0:1,label:'표결 참여율 (당 집단 불참 제외)',unit:'%',desc:'같은 정당 의원 절반 이상이 함께 불참한 표결을 뺀 참여율. 개인 사유와 당 차원의 불참을 나누어 보기 위한 수치입니다. 장관 겸직, 국회의장, 청가·공무 출장은 구분되지 않습니다.'},{k:'voteRate',w0:0,label:'표결 참여율 (전체)',unit:'%',desc:'자신이 대상이었던 본회의 전자표결 중 불참이 아닌 비율. 당 차원의 불참도 그대로 포함되어 정당별 차이가 크게 나타납니다.'},{k:'rep',w0:1,label:'대표발의 법안 수',unit:'건',desc:'대표발의한 제22대 법안 수. 수가 많다고 질이 높다는 뜻은 아닙니다.'},{k:'passRate',w0:1,label:'대표발의 법안 반영률',unit:'%',desc:'대표발의 법안 중 가결·대안반영 비율. 5건 이상일 때만 계산합니다. 계류 중인 법안이 많으면 낮게 나옵니다.'},{k:'focus',w0:0,label:'현재 위원회 법안 비중',unit:'%',desc:'대표발의 법안 중 현재 소속 위원회 소관 비율. 5건 이상일 때만 계산합니다. 위원회를 옮기면 크게 낮아져 전문성 지표로 보기 어려워, 기본 순위에서는 뺐습니다.'}];
 const norm=s=>(s||'').replace(/\s/g,'').toLowerCase();
 function ranks(k){const a=M.filter(x=>x[k]!=null).sort((p,q)=>q[k]-p[k]);const r={};let cur=0,prev=null;a.forEach((x,i)=>{if(x[k]!==prev){cur=i+1;prev=x[k]}r[x.id]=cur});return{r,n:a.length}}
 function pctile(k){const a=M.filter(x=>x[k]!=null).map(x=>x[k]).sort((p,q)=>p-q);const m={};M.forEach(x=>{if(x[k]==null)return;let c=0;for(const v of a)if(v<=x[k])c++;m[x.id]=c/a.length*100});return m}
@@ -51,17 +51,17 @@ function member(id){
   h('div',{class:'chips'},m.cmits.map(c=>h('span',{class:'chip'},c))),
   h('div',{class:'grid'},METRICS.map(x=>{const v=m[x.k],{r,n}=ranks(x.k);return h('div',{class:'stat'},h('b',null,v==null?'–':v.toLocaleString('ko-KR')+x.unit),h('span',null,x.label),h('i',null,v==null?'자료 부족':n+'명 중 '+r[m.id]+'위'))})),
   /의장/.test(m.role)?h('div',{class:'note'},'국회의장은 관례상 표결에 참여하지 않아 표결 참여율을 그대로 비교하기 어렵습니다.'):null,
-  h('h2',null,'본회의 표결 기록'),h('p',{class:'tn'},`찬성 ${m.y} · 반대 ${m.n} · 기권 ${m.a} · 불참 ${m.x} (총 ${m.voteTotal}건)`),
+  h('h2',null,'본회의 표결 기록'),h('p',{class:'tn'},`찬성 ${m.y} · 반대 ${m.n} · 기권 ${m.a} · 불참 ${m.x} (총 ${m.voteTotal}건)`),m.groupBills?h('p',{class:'small muted'},`이 중 ${m.groupBills}건은 같은 정당 의원 절반 이상이 함께 불참한 표결입니다.`):null,
   h('h2',null,'최근 대표발의 법안'),m.recent.length?m.recent.map(b=>{const u=safe(b.u);return h(u?'a':'div',{class:'card',href:u,target:u?'_blank':null,rel:u?'noopener':null},h('div',null,b.n),h('div',{class:'small muted'},(b.d||'')+' · '+b.r))}):h('p',{class:'muted'},'대표발의 기록이 없거나 연결하지 못했습니다.'),
   h('h2',null,'연락처'),h('p',null,m.tel||'–',' ',safe(m.web)?h('a',{href:m.web,target:'_blank',rel:'noopener'},'홈페이지'):null))}
 
 function rank(){
- const w={};METRICS.forEach(x=>w[x.k]=1);const P=Object.fromEntries(METRICS.map(x=>[x.k,pctile(x.k)]));const ol=h('ol',{class:'rank'});
+ const w={};METRICS.forEach(x=>w[x.k]=x.w0);const P=Object.fromEntries(METRICS.map(x=>[x.k,pctile(x.k)]));const ol=h('ol',{class:'rank'});
  function draw(){const tot=Object.values(w).reduce((a,b)=>a+b,0);ol.textContent='';if(!tot){ol.append(h('li',null,h('span'),'기준을 하나 이상 올려 주세요.'));return}
   const r=M.map(m=>{let s=0,u=0;METRICS.forEach(x=>{if(P[x.k][m.id]!=null&&w[x.k]){s+=P[x.k][m.id]*w[x.k];u+=w[x.k]}});return{m,s:u/tot>=.5?s/u:null}}).filter(x=>x.s!=null).sort((a,b)=>b.s-a.s);
   r.forEach((x,i)=>ol.append(h('li',null,h('span',{class:'tn muted'},i+1),h('a',{href:'#m/'+x.m.id},x.m.name,' ',h('span',{class:'small muted',style:'font-weight:400'},x.m.party+' · '+x.m.area)),h('span',{class:'tn'},x.s.toFixed(1)))))}
  show(h('h1',null,'내 기준 순위'),h('p',{class:'muted'},'기준의 비중을 정하면 순위가 다시 계산됩니다. 점수는 각 기준의 백분위를 비중대로 평균한 값이며, 일을 잘하는지에 대한 판정이 아닙니다. 고른 기준의 절반 이상에 자료가 있는 의원만 나옵니다.'),
-  METRICS.map(x=>{const o=h('span',{class:'tn'},1);return h('div',null,h('label',{class:'w'},h('span',null,x.label),h('input',{type:'range',min:0,max:3,value:1,oninput:e=>{w[x.k]=+e.target.value;o.textContent=e.target.value;draw()}}),o),h('div',{class:'small muted'},x.desc))}),ol);draw()}
+  METRICS.map(x=>{const o=h('span',{class:'tn'},x.w0);return h('div',null,h('label',{class:'w'},h('span',null,x.label),h('input',{type:'range',min:0,max:3,value:x.w0,oninput:e=>{w[x.k]=+e.target.value;o.textContent=e.target.value;draw()}}),o),h('div',{class:'small muted'},x.desc))}),ol);draw()}
 
 function quiz(){
  if(Q.length<3)return show(h('h1',null,'표결 궁합 테스트'),h('p',{class:'muted'},'찬반이 갈린 의안 자료가 아직 부족합니다.'));
