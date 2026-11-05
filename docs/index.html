@@ -1,0 +1,88 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>POLISCOPE KR</title><meta name="description" content="국회 공개 자료로 보는 제22대 국회의원 의정활동">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+:root{--bg:#f4f5f1;--surface:#fff;--fg:#1a1e1a;--muted:#5f675f;--line:#dcdfd6;--ac:#23564a;--ac-soft:#e0ece7;--hi:#b5651d;--hi-soft:#f8ecdd;--bad:#a93a2e;--font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#121512;--surface:#1b201c;--fg:#e8ece6;--muted:#a0aaa1;--line:#2e352f;--ac:#83c9b3;--ac-soft:#1c322b;--hi:#eeb573;--hi-soft:#39291a;--bad:#ff9186;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 var(--font)}
+.wrap{max-width:760px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+header{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding-block:14px 10px}
+.logo{font-weight:900;font-size:19px;letter-spacing:.02em;color:var(--fg);text-decoration:none}nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{padding:6px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500;font-size:14px}nav a.on{background:var(--ac);color:var(--surface)}
+h1{font-size:clamp(24px,6vw,34px);line-height:1.25;margin:14px 0 6px;font-weight:900;text-wrap:balance}h2{font-size:17px;margin:22px 0 8px}p{margin:6px 0}
+.muted{color:var(--muted)}.small{font-size:13px}a{color:var(--ac)}
+input[type=search]{width:100%;padding:13px 14px;font:16px var(--font);border:1.5px solid var(--ac);border-radius:12px;background:var(--surface);color:var(--fg)}
+.card{display:block;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:8px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}.name{font-weight:700;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chip{font-size:12.5px;background:var(--ac-soft);color:var(--ac);border-radius:999px;padding:2px 10px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.3}.stat span{font-size:12.5px;color:var(--muted)}.stat i{display:block;font-style:normal;font-size:12px;color:var(--ac);margin-top:2px}
+.note{background:var(--hi-soft);border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:10px}
+.w{display:grid;grid-template-columns:1fr 92px 34px;gap:8px;align-items:center;margin-top:6px;font-size:14px}.w input{width:100%}
+ol.rank{list-style:none;margin:8px 0 0;padding:0}ol.rank li{display:grid;grid-template-columns:38px 1fr auto;gap:8px;align-items:baseline;padding:9px 2px;border-bottom:1px solid var(--line)}ol.rank a{color:inherit;text-decoration:none;font-weight:700}
+.tn{font-variant-numeric:tabular-nums}button{font:600 15px var(--font);border-radius:10px;padding:11px 15px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}button.pri{background:var(--ac);border-color:var(--ac);color:var(--surface)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:12px}.bar i{display:block;height:100%;background:var(--ac)}
+.q{font-size:18px;font-weight:700;margin-top:14px;line-height:1.45;overflow-wrap:anywhere}
+footer{margin-top:30px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+</style></head><body><div class="wrap"><header><a class="logo" href="#home">POLISCOPE KR</a><nav id="nav"></nav></header><main id="m"><p class="muted">자료를 불러오는 중입니다.</p></main><footer id="f"></footer></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const show=(...k)=>$('m').replaceChildren(...k.flat(Infinity).filter(x=>x!=null&&x!==false));
+function h(t,p,...k){const e=document.createElement(t);for(const[a,v]of Object.entries(p||{})){if(v==null||v===false)continue;if(a.startsWith('on'))e[a]=v;else if(a==='value')e.value=v;else e.setAttribute(a,v)}for(const c of k.flat())if(c!=null&&c!==false)e.append(c.nodeType?c:String(c));return e}
+let M=[],Q=[],META=null;const safe=u=>/^https?:\/\//.test(u||'')?u:null;
+const METRICS=[{k:'voteRate',label:'본회의 표결 참여율',unit:'%',desc:'자신이 대상이었던 본회의 전자표결 중 불참이 아닌 비율. 청가·공무 출장 사유는 구분되지 않습니다.'},{k:'rep',label:'대표발의 법안 수',unit:'건',desc:'대표발의한 제22대 법안 수. 수가 많다고 질이 높다는 뜻은 아닙니다.'},{k:'passRate',label:'대표발의 법안 반영률',unit:'%',desc:'대표발의 법안 중 가결·대안반영 비율. 5건 이상일 때만 계산합니다. 계류 중인 법안이 많으면 낮게 나옵니다.'},{k:'focus',label:'소속 위원회 법안 비중',unit:'%',desc:'대표발의 법안 중 현재 소속 위원회 소관 비율. 5건 이상일 때만 계산합니다. 위원회를 옮겼다면 낮게 나옵니다.'}];
+const norm=s=>(s||'').replace(/\s/g,'').toLowerCase();
+function ranks(k){const a=M.filter(x=>x[k]!=null).sort((p,q)=>q[k]-p[k]);const r={};let cur=0,prev=null;a.forEach((x,i)=>{if(x[k]!==prev){cur=i+1;prev=x[k]}r[x.id]=cur});return{r,n:a.length}}
+function pctile(k){const a=M.filter(x=>x[k]!=null).map(x=>x[k]).sort((p,q)=>p-q);const m={};M.forEach(x=>{if(x[k]==null)return;let c=0;for(const v of a)if(v<=x[k])c++;m[x.id]=c/a.length*100});return m}
+function mc(m){return h('a',{class:'card',href:'#m/'+m.id},h('div',{class:'row'},h('span',{class:'name'},m.name),h('span',{class:'muted small'},m.party)),h('div',{class:'small muted'},m.area+' · '+m.terms))}
+
+function home(){
+ const list=h('div'),inp=h('input',{type:'search',id:'s',placeholder:'지역구나 이름 (예: 강남, 수원, 비례대표)','aria-label':'지역구나 이름 찾기',oninput:()=>fill()});
+ function fill(){const q=norm(inp.value);list.textContent='';if(!q)return;const r=M.filter(m=>norm(m.area).includes(q)||norm(m.name).includes(q));list.append(h('p',{class:'small muted'},r.length+'명'),...r.slice(0,60).map(mc));if(r.length>60)list.append(h('p',{class:'small muted'},'앞의 60명만 보여 줍니다. 더 자세히 입력하세요.'))}
+ show(h('h1',null,'우리 지역구 의원은 국회에서 무엇을 했을까'),h('p',{class:'muted'},'국회가 공개한 표결과 법안 기록만으로 봅니다. 현직 '+M.length+'명.'),inp,list,
+  h('div',{class:'grid'},h('a',{class:'card',href:'#quiz'},h('b',null,'표결 궁합 테스트'),h('div',{class:'small muted'},'실제 법안에 찬반을 고르면 나와 표결이 비슷한 의원이 나옵니다.')),h('a',{class:'card',href:'#rank'},h('b',null,'내 기준 순위'),h('div',{class:'small muted'},'무엇을 중요하게 볼지 직접 정하면 순위가 바뀝니다.'))));
+ inp.focus()}
+
+function member(id){
+ const m=M.find(x=>x.id===id);if(!m)return show(h('p',null,'의원을 찾지 못했습니다.'));
+ show(h('h1',null,m.name),h('div',{class:'muted'},m.party+' · '+m.area+' · '+m.terms),
+  h('div',{class:'chips'},m.cmits.map(c=>h('span',{class:'chip'},c))),
+  h('div',{class:'grid'},METRICS.map(x=>{const v=m[x.k],{r,n}=ranks(x.k);return h('div',{class:'stat'},h('b',null,v==null?'–':v.toLocaleString('ko-KR')+x.unit),h('span',null,x.label),h('i',null,v==null?'자료 부족':n+'명 중 '+r[m.id]+'위'))})),
+  /의장/.test(m.role)?h('div',{class:'note'},'국회의장은 관례상 표결에 참여하지 않아 표결 참여율을 그대로 비교하기 어렵습니다.'):null,
+  h('h2',null,'본회의 표결 기록'),h('p',{class:'tn'},`찬성 ${m.y} · 반대 ${m.n} · 기권 ${m.a} · 불참 ${m.x} (총 ${m.voteTotal}건)`),
+  h('h2',null,'최근 대표발의 법안'),m.recent.length?m.recent.map(b=>{const u=safe(b.u);return h(u?'a':'div',{class:'card',href:u,target:u?'_blank':null,rel:u?'noopener':null},h('div',null,b.n),h('div',{class:'small muted'},(b.d||'')+' · '+b.r))}):h('p',{class:'muted'},'대표발의 기록이 없거나 연결하지 못했습니다.'),
+  h('h2',null,'연락처'),h('p',null,m.tel||'–',' ',safe(m.web)?h('a',{href:m.web,target:'_blank',rel:'noopener'},'홈페이지'):null))}
+
+function rank(){
+ const w={};METRICS.forEach(x=>w[x.k]=1);const P=Object.fromEntries(METRICS.map(x=>[x.k,pctile(x.k)]));const ol=h('ol',{class:'rank'});
+ function draw(){const tot=Object.values(w).reduce((a,b)=>a+b,0);ol.textContent='';if(!tot){ol.append(h('li',null,h('span'),'기준을 하나 이상 올려 주세요.'));return}
+  const r=M.map(m=>{let s=0,u=0;METRICS.forEach(x=>{if(P[x.k][m.id]!=null&&w[x.k]){s+=P[x.k][m.id]*w[x.k];u+=w[x.k]}});return{m,s:u/tot>=.5?s/u:null}}).filter(x=>x.s!=null).sort((a,b)=>b.s-a.s);
+  r.forEach((x,i)=>ol.append(h('li',null,h('span',{class:'tn muted'},i+1),h('a',{href:'#m/'+x.m.id},x.m.name,' ',h('span',{class:'small muted',style:'font-weight:400'},x.m.party+' · '+x.m.area)),h('span',{class:'tn'},x.s.toFixed(1)))))}
+ show(h('h1',null,'내 기준 순위'),h('p',{class:'muted'},'기준의 비중을 정하면 순위가 다시 계산됩니다. 점수는 각 기준의 백분위를 비중대로 평균한 값이며, 일을 잘하는지에 대한 판정이 아닙니다. 고른 기준의 절반 이상에 자료가 있는 의원만 나옵니다.'),
+  METRICS.map(x=>{const o=h('span',{class:'tn'},1);return h('div',null,h('label',{class:'w'},h('span',null,x.label),h('input',{type:'range',min:0,max:3,value:1,oninput:e=>{w[x.k]=+e.target.value;o.textContent=e.target.value;draw()}}),o),h('div',{class:'small muted'},x.desc))}),ol);draw()}
+
+function quiz(){
+ if(Q.length<3)return show(h('h1',null,'표결 궁합 테스트'),h('p',{class:'muted'},'찬반이 갈린 의안 자료가 아직 부족합니다.'));
+ const items=Q.slice(0,10),ans={};let i=0;
+ function step(){if(i>=items.length)return result();const b=items[i],u=safe(b.url);const a=v=>()=>{if(v)ans[b.id]=v;i++;step()};
+  show(h('div',{class:'small muted'},`${i+1} / ${items.length}`),h('div',{class:'bar'},h('i',{style:`width:${i/items.length*100}%`})),h('div',{class:'q'},b.name),h('div',{class:'small muted'},(b.date||'')+' 본회의 표결 ',u?h('a',{href:u,target:'_blank',rel:'noopener'},'법안 내용 보기'):null),
+   h('div',{class:'btns'},h('button',{class:'pri',onclick:a('y')},'찬성'),h('button',{class:'pri',onclick:a('n')},'반대')),h('div',{style:'margin-top:8px'},h('button',{onclick:a(null),style:'width:100%'},'잘 모르겠어요 (건너뛰기)')))}
+ function result(){const ids=Object.keys(ans);if(ids.length<3){show(h('p',null,'세 문항 이상 답해야 결과를 볼 수 있습니다.'),h('button',{onclick:quiz},'다시 하기'));return}
+  const rows=M.map(m=>{let same=0,c=0;items.forEach(b=>{if(!ans[b.id])return;const v=b.y.includes(m.id)?'y':b.n.includes(m.id)?'n':null;if(!v)return;c++;if(v===ans[b.id])same++});return{m,c,same,p:c?same/c*100:null}}).filter(x=>x.c>=Math.min(3,ids.length)).sort((a,b)=>b.p-a.p||b.c-a.c);
+  const top=rows.slice(0,5),tx=top.length?`내 표결 궁합 1위는 ${top[0].m.name} 의원 (${top[0].p.toFixed(0)}%)`:'';const cp=h('button',{onclick:()=>{try{navigator.clipboard.writeText(tx+' '+location.href.split('#')[0]);cp.textContent='복사됨'}catch{}}},'결과 복사');
+  show(h('h1',null,'나와 표결이 비슷한 의원'),h('p',{class:'muted'},ids.length+'개 법안만 비교한 결과입니다. 표결이 비슷하다는 뜻일 뿐, 투표를 권하는 내용이 아닙니다. 답한 내용은 저장하지 않습니다.'),top.map(x=>h('a',{class:'card',href:'#m/'+x.m.id},h('div',{class:'row'},h('span',{class:'name'},x.m.name),h('b',{class:'tn'},x.p.toFixed(0)+'%')),h('div',{class:'small muted'},x.m.party+' · '+x.m.area+' · '+x.c+'건 비교'))),h('div',{class:'btns'},cp,h('button',{onclick:quiz},'다시 하기')))}
+ step()}
+
+function about(){
+ show(h('h1',null,'자료와 계산 방법'),h('p',null,'모든 수치는 열린국회정보 Open API의 공개 자료를 하루 한 번 받아 같은 규칙으로 계산합니다. 사람이나 AI가 의원을 판정하지 않습니다.'),METRICS.map(x=>h('div',{class:'card'},h('b',null,x.label),h('div',{class:'small muted'},x.desc))),
+  h('h2',null,'표결 궁합 문항은 어떻게 고르나요'),h('p',null,'본회의 표결 가운데 찬성·반대를 합쳐 100명 이상 참여했고 소수 쪽이 15% 이상인 의안을 최근순으로 뽑습니다.'),
+  h('h2',null,'한계'),h('p',null,'지역구 활동, 상임위 질의, 법안의 질은 이 수치에 담기지 않습니다. 오류를 발견하면 원문 기록으로 확인해 주세요.'),META&&META.warnings.length?h('div',{class:'note'},META.warnings.map(w=>h('div',null,w))):null,h('p',null,h('a',{href:'https://open.assembly.go.kr',target:'_blank',rel:'noopener'},'열린국회정보')))}
+
+const ROUTES=[['home','찾기'],['quiz','표결 궁합'],['rank','내 기준 순위'],['about','자료·방법']];
+function go(){const r=(location.hash||'#home').slice(1);$('nav').replaceChildren(...ROUTES.map(([k,l])=>h('a',{href:'#'+k,class:r===k?'on':null},l)));
+ if(r.startsWith('m/'))member(r.slice(2));else if(r==='quiz')quiz();else if(r==='rank')rank();else if(r==='about')about();else home();scrollTo(0,0)}
+(async()=>{try{const g=u=>fetch(u,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json()});[M,Q,META]=await Promise.all([g('data/members.json'),g('data/quiz.json'),g('data/meta.json')]);$('f').textContent='자료 기준: '+new Date(META.updated).toLocaleString('ko-KR')+' · 출처: 열린국회정보 · 의원·정당과 무관한 민간 정보 서비스';addEventListener('hashchange',go);go()}catch{show(h('h1',null,'자료를 준비하고 있습니다'),h('p',{class:'muted'},'첫 수집이 끝나면 의원 정보가 표시됩니다.'))}})();
+})();
+</script></body></html>
