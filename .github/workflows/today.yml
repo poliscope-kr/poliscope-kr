@@ -1,0 +1,31 @@
+name: 오늘의 국회
+on:
+  schedule:
+    - cron: '41 */3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: today
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - env:
+          ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+        run: node scripts/today.mjs
+      - run: |
+          git config user.name "poliscope-bot"
+          git config user.email "poliscope-bot@users.noreply.github.com"
+          git add docs/data/today.json
+          git diff --cached --quiet && exit 0
+          git commit -m "오늘의 국회 갱신"
+          for i in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep 15; done
+          exit 1
