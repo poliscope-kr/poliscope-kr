@@ -64,7 +64,7 @@ for (const m of members) {
     for (const v of vids) { const k = String(v.at).slice(0, 7); months[k] = months[k] || { l: 0, s: 0 }; if (v.s != null && v.s <= 180) { months[k].s++; shorts++; } else { months[k].l++; longs++; } }
     // 활동 점수: 달마다 긴 영상 1, 짧은 영상 0.25로 세고 월 4점에서 멈춘다. 많이 올린다고 끝없이 오르지 않는다.
     const pts = Object.values(months).reduce((a, x) => a + Math.min(4, x.l + x.s * .25), 0);
-    out[m.id] = { url, title: ch.title, longs, shorts, lastAt: vids.map(v => v.at).sort().pop() || null, activeMonths: Object.keys(months).length, online: Math.round(pts / 48 * 1000) / 10,
+    out[m.id] = { url, title: ch.title, longs, shorts, lastAt: vids.map(v => v.at).sort().pop() || null, activeMonths: Math.min(12, Object.keys(months).length), online: Math.min(100, Math.round(pts / 48 * 1000) / 10),
       recent: vids.sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 5).map(v => ({ t: v.t, id: v.id, d: String(v.at).slice(0, 10), short: v.s != null && v.s <= 180 })) };
   } catch (e) {
     if (e instanceof QuotaError) { quota = true; console.log('할당량 초과로 중단'); break; }
@@ -72,6 +72,10 @@ for (const m of members) {
   }
 }
 if (quota) for (const id of Object.keys(prev)) if (!out[id]) out[id] = prev[id];
+// 한 채널이 여러 의원에게 연결되면 주소 오류일 수 있어 모두 뺀다
+const byCh = {}; for (const [id, o] of Object.entries(out)) { const c = channels[o.url]?.id; if (c) (byCh[c] = byCh[c] || []).push(id); }
+const shared = Object.values(byCh).filter(a => a.length > 1).flat();
+for (const id of shared) { unresolved.push(members.find(m => m.id === id).name); delete out[id]; }
 writeFileSync(CACHE, JSON.stringify(channels));
 writeFileSync(`${OUT}/youtube.json`, JSON.stringify({ updated: new Date().toISOString(), resolved: Object.keys(out).length, unresolved, failed, quota, members: out }));
 console.log(`유튜브 완료: ${Object.keys(out).length}명, 채널 못 찾음 ${unresolved.length}명 (${unresolved.slice(0, 20).join(', ')}), 실패 ${failed}, 사용 ${units}단위`);

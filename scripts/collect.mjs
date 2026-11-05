@@ -132,7 +132,8 @@ const snsBy = {};
 try {
   const rows = await getAll('negnlnyvatsjwocar');
   log(`SNS 자료 ${rows.length}건, 항목: ${rows[0] ? Object.keys(rows[0]).join(', ') : '없음'}`);
-  const ok = u => /^https?:\/\/\S+\.\S+/.test(String(u || '').trim()) ? String(u).trim() : null;
+  // 원자료에 주소가 겹쳐 적힌 경우가 있어 정리한다 (예: youtube.com/https://youtube.com/@a, youtube.com/www.youtube.com/@a, 전각 ＠)
+  const ok = u => { let v = String(u || '').trim().replace(/＠/g, '@'); const i = v.lastIndexOf('http'); if (i > 0) v = v.slice(i); v = v.replace(/(youtube\.com\/)(?:www\.)?youtube\.com\//i, '$1'); return /^https?:\/\/\S+\.\S+/.test(v) ? v : null; };
   for (const r of rows) {
     const code = r.MONA_CD && stats[r.MONA_CD] ? r.MONA_CD : byName[String(r.HG_NM || '').trim()]; if (!code) continue;
     const v = { facebook: ok(r.F_URL), x: ok(r.T_URL), youtube: ok(r.Y_URL), instagram: ok(r.I_URL), blog: ok(r.B_URL) };
