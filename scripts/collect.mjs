@@ -59,6 +59,21 @@ const PASS = /가결|대안반영|수정안반영/;
 const pct = (a, b) => b ? Math.round(a / b * 1000) / 10 : null;
 const VOTE = { '찬성': 'y', '반대': 'n', '기권': 'a', '불참': 'x' };
 
+// 생활 분야 분류: 법률 이름의 단어로만 나눈다. 규칙은 docs/fields.json으로 공개한다.
+const FIELDS = {
+  housing: ['주거·부동산', /주택|임대차|전세|공공주택|도시정비|재건축|재개발|건축물|부동산|택지|월세/],
+  jobs: ['일자리·노동', /근로|고용|노동|최저임금|산업안전|산업재해|퇴직급여|직업안정|파견|비정규|임금채권|남녀고용/],
+  welfare: ['복지·돌봄', /복지|연금|기초생활|장애인|노인|아동|한부모|영유아|보육|저출산|출산|돌봄|청소년|다문화|긴급지원|자살/],
+  health: ['의료·건강', /의료|약사|건강보험|응급|감염병|보건|간호|정신건강|암관리|국민건강|식품|마약류|의약품|혈액|공공보건/],
+  education: ['교육', /교육|학교|고등교육|학원|사립학교|교원|학자금|평생교육|대학/],
+  business: ['소상공인·중소기업', /소상공인|전통시장|상가건물|가맹|중소기업|벤처|하도급|유통산업|상생|자영업|신용보증|대규모유통/],
+  living: ['물가·소비·생활비', /소비자|물가|전자상거래|할부|통신|전기사업|도시가스|대중교통|여객|공정거래|이자제한|대부업|채무자|서민금융|방문판매/],
+  tax: ['세금', /소득세|부가가치세|법인세|상속세|증여세|종합부동산세|지방세|조세|관세|국세|개별소비세|교통·에너지/],
+  rural: ['농어촌', /농업|농어|농지|농산물|축산|수산|어업|양곡|산림|임업|귀농|쌀/],
+  safety: ['안전·재난', /재난|소방|도로교통|교통안전|화재|어린이|전기안전|가스안전|철도안전|해사안전|범죄피해|스토킹|가정폭력|성폭력/],
+};
+const fieldsOf = n => Object.entries(FIELDS).filter(([, [, re]]) => re.test(n)).map(([k]) => k);
+
 // 1. 의원
 log('의원 명단 받는 중');
 const rawMembers = await getAll(API.members, {}, false);
@@ -69,7 +84,7 @@ const nameCount = {}; rawMembers.forEach(m => nameCount[m.HG_NM] = (nameCount[m.
 const homonyms = Object.keys(nameCount).filter(n => nameCount[n] > 1);
 const byName = Object.fromEntries(rawMembers.filter(m => nameCount[m.HG_NM] === 1).map(m => [m.HG_NM, m.MONA_CD]));
 const stats = {};
-rawMembers.forEach(m => stats[m.MONA_CD] = { rep: 0, passed: 0, inCmit: 0, cmitBills: 0, y: 0, n: 0, a: 0, x: 0, recent: [] });
+rawMembers.forEach(m => stats[m.MONA_CD] = { fields: {}, rep: 0, passed: 0, inCmit: 0, cmitBills: 0, y: 0, n: 0, a: 0, x: 0, recent: [] });
 const cmitsOf = m => String(m.CMITS || m.CMIT_NM || '').split(/[,，]/).map(s => s.trim()).filter(Boolean);
 const codeToM = Object.fromEntries(rawMembers.map(m => [m.MONA_CD, m]));
 
@@ -89,6 +104,7 @@ for (const b of bills) {
   for (const code of codes) {
     const s = stats[code]; s.rep++;
     if (PASS.test(b.PROC_RESULT || '')) s.passed++;
+    for (const f of fieldsOf(b.BILL_NAME || '')) { const x = s.fields[f] = s.fields[f] || { r: 0, p: 0 }; x.r++; if (PASS.test(b.PROC_RESULT || '')) x.p++; }
     if (b.COMMITTEE) { s.cmitBills++; if (cmitsOf(codeToM[code]).includes(b.COMMITTEE)) s.inCmit++; }
     s.recent.push({ n: b.BILL_NAME, d: b.PROPOSE_DT, r: b.PROC_RESULT || '계류', u: b.DETAIL_LINK || '' });
   }
@@ -152,7 +168,7 @@ try {
 const members = rawMembers.map(m => {
   const s = stats[m.MONA_CD], voted = s.y + s.n + s.a, total = voted + s.x;
   s.recent.sort((a, b) => String(b.d).localeCompare(String(a.d)));
-  return { sns: snsBy[m.MONA_CD] || {}, id: m.MONA_CD, name: m.HG_NM, hanja: m.HJ_NM || '', party: m.POLY_NM, area: m.ORIG_NM, type: m.ELECT_GBN_NM || '', terms: m.REELE_GBN_NM, role: m.JOB_RES_NM || '', cmits: cmitsOf(m), tel: m.TEL_NO || '', web: m.HOMEPAGE || '',
+  return { fields: s.fields, sns: snsBy[m.MONA_CD] || {}, id: m.MONA_CD, name: m.HG_NM, hanja: m.HJ_NM || '', party: m.POLY_NM, area: m.ORIG_NM, type: m.ELECT_GBN_NM || '', terms: m.REELE_GBN_NM, role: m.JOB_RES_NM || '', cmits: cmitsOf(m), tel: m.TEL_NO || '', web: m.HOMEPAGE || '',
     dBase: s.dBase || 0, dDiff: s.dDiff || 0, dissent: (s.dBase || 0) >= 100 ? pct(s.dDiff || 0, s.dBase) : null, voteTotal: total, voteRate: pct(voted, total), voteAdj: pct(s.adjVoted || 0, s.adjTotal || 0), groupBills: s.groupAbsentBills || 0, rep: s.rep, passRate: s.rep >= 5 ? pct(s.passed, s.rep) : null, passed: s.passed, focus: s.cmitBills >= 5 ? pct(s.inCmit, s.cmitBills) : null, y: s.y, n: s.n, a: s.a, x: s.x, recent: s.recent.slice(0, 10) };
 });
 // 표결 궁합: 찬반이 실제로 갈린 최근 의안을 규칙으로만 고른다(사람이 고르지 않음)
@@ -163,6 +179,9 @@ if (quiz.length < 10) warnings.push(`찬반이 갈린 의안이 ${quiz.length}�
 mkdirSync(OUT, { recursive: true });
 writeFileSync(`${OUT}/members.json`, JSON.stringify(members));
 writeFileSync(`${OUT}/quiz.json`, JSON.stringify(quiz));
+writeFileSync(`${OUT}/fields.json`, JSON.stringify(Object.fromEntries(Object.entries(FIELDS).map(([k, [n, re]]) => [k, { name: n, words: re.source.split('|') }]))));
+{ const un = {}; let hit = 0; for (const b of bills) { if (fieldsOf(b.BILL_NAME || '').length) hit++; else { const n = String(b.BILL_NAME || '').split(' ')[0]; un[n] = (un[n] || 0) + 1; } }
+  log(`생활 분야 분류: ${hit}/${bills.length}건 (${Math.round(hit / bills.length * 100)}%). 미분류 상위: ` + Object.entries(un).sort((a, b) => b[1] - a[1]).slice(0, 30).map(([n, c]) => `${n} ${c}`).join(', ')); }
 writeFileSync(`${OUT}/meta.json`, JSON.stringify({ updated: new Date().toISOString(), age: AGE, members: members.length, bills: bills.length, voteBills: Object.keys(cache).length, voteBillsTotal: voteBills.length, incomplete, warnings }, null, 1));
 console.log(`완료: 의원 ${members.length}명, 법안 ${bills.length}건, 표결 의안 ${Object.keys(cache).length}건 (이번 ${fetched}건)`);
 warnings.forEach(w => console.log('주의:', w));
