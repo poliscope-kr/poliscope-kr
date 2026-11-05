@@ -142,7 +142,11 @@ function taxPage(){
  const rows=M.map(m=>({m,t:TAX.trips[m.id]})).filter(x=>x.t).sort((a,b)=>b.t.days-a.t.days||b.t.n-a.t.n);
  const ol=h('ol',{class:'rank'},rows.slice(0,30).map((x,i)=>h('li',null,h('span',{class:'tn muted'},i+1),h('a',{href:'#m/'+x.m.id},x.m.name,' ',h('span',{class:'small muted',style:'font-weight:400'},x.m.party)),h('span',{class:'tn small'},`${x.t.n}건 · ${fmt(x.t.days)}일`))));
  const links=(a,f)=>a.map(x=>{const u=safe(x.u);return h(u?'a':'div',{class:'card',href:u,target:u?'_blank':null,rel:u?'noopener':null},f(x))});
- show(h('h1',null,'세금아 세금아 어디로 갔니?'),h('p',{class:'muted'},'공개된 기록으로 세금과 정치자금의 흐름을 따라가 봅니다. 많고 적음이 곧 낭비를 뜻하지 않으며, 비용 금액이 공개되지 않은 항목은 비교하지 않습니다.'),
+ show(h('h1',null,'세금아 세금아 어디로 갔니?'),h('p',null,'나라 전체 세금이 아니라, 국회의원과 국회가 쓰는 세금을 따라가 보는 코너입니다.'),
+  h('div',{class:'sec'},
+   h('div',null,h('b',null,'여기서 볼 수 있어요'),h('ul',{style:'margin:6px 0 0;padding-left:20px'},h('li',null,'의원 연구단체가 쓴 돈과 보고서 공개 여부'),h('li',null,'의원의 직무상 국외활동 신고 (금액은 비공개)'),h('li',null,'국회사무처의 업무추진비 공개 파일 (의원 개인 지출 아님)'),h('li',null,'법안에 드는 돈을 추산한 국회예산정책처 보고서'))),
+   h('div',null,h('b',null,'여기서 볼 수 없어요'),h('ul',{style:'margin:6px 0 0;padding-left:20px'},h('li',null,'복지, 국방, 교육 같은 나라 전체 예산'),h('li',null,'의원 세비와 의원실 경비의 의원별 내역'),h('li',null,'특수활동비, 지역구 예산 증액(쪽지 예산)'))),
+   h('p',{class:'small muted',style:'margin:0'},'공개 자료에 있는 만큼만 보여 주기 때문에 실제로 쓴 돈의 일부입니다. 많이 썼다고 낭비라는 뜻은 아니고, 안 보인다고 0원이라는 뜻도 아닙니다.')),
   h('h2',null,'의원이 직접 꾸린 연구단체로 갔니?'),h('p',{class:'small muted'},`의원 연구단체 ${PJ.groups.length}곳의 기록된 집행 합계는 ${won(PJ.groups.reduce((t,g)=>t+g.total,0))}입니다. 보고서가 공개됐는지 점수로 보여 줍니다.`),PJ.groups.slice().sort((x,y)=>y.total-x.total).slice(0,3).map(pjCard),h('p',{class:'small'},h('a',{href:'#projects'},'전체 보기와 점수 기준')),
   h('h2',null,'해외로 갔니?'),h('p',{class:'small muted'},`국회의원이 직무상 국외활동으로 신고한 내역입니다. 현직 의원 ${rows.length}명, 전체 ${fmt(TAX.tripRows)}건. 이 자료에는 금액이 없고, 경비 지원 기관과 결과보고서 여부만 있습니다. 신고 일수가 많은 순서이며, 공식 의원외교나 신고 대상이 아닌 일정은 빠져 있을 수 있습니다.`),rows.length?ol:h('p',{class:'muted'},'자료를 받는 중입니다.'),
   h('h2',null,'법안으로 갔니?'),h('p',{class:'small muted'},'의원별 법안의 예상 재정은 아직 넣지 못했습니다. 지금은 국회예산정책처의 최근 비용추계·재정전망 보고서를 보여 줍니다. 세금 쓰임 관련 공식 자료입니다.'),links(TAX.nabo,x=>[h('div',null,x.t),h('div',{class:'small muted'},x.d||'')]),
