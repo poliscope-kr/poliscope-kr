@@ -49,7 +49,7 @@ const fix=t=>h('p',{class:'small'},h('a',{href:'https://github.com/poliscope-kr/
 function home(){
  const list=h('div'),inp=h('input',{type:'search',id:'s',placeholder:'지역구나 이름 (예: 강남, 수원, 비례대표)','aria-label':'지역구나 이름 찾기',oninput:()=>fill()});
  function fill(){const q=norm(inp.value);list.textContent='';if(!q)return;const r=M.filter(m=>norm(m.area).includes(q)||norm(m.name).includes(q));list.append(h('p',{class:'small muted'},r.length+'명'),...r.slice(0,60).map(mc));if(r.length>60)list.append(h('p',{class:'small muted'},'앞의 60명만 보여 줍니다. 더 자세히 입력하세요.'))}
- show(h('h1',null,'우리 지역구 의원은 국회에서 무엇을 했을까'),h('p',{class:'muted'},'국회가 공개한 표결과 법안 기록만으로 봅니다. 현직 '+M.length+'명.'),inp,list,
+ show(h('h1',null,'우리 지역구 의원은 국회에서 무엇을 했을까'),h('p',{class:'muted'},'국회 표결·법안 기록과 유튜브, 언론 보도로 봅니다. 현직 '+M.length+'명.'),inp,list,
   h('div',{class:'grid'},h('a',{class:'card',href:'#quiz'},h('b',null,'표결 궁합 테스트'),h('div',{class:'small muted'},'실제 법안에 찬반을 고르면 나와 표결이 비슷한 의원이 나옵니다.')),h('a',{class:'card',href:'#rank'},h('b',null,'내 기준 순위'),h('div',{class:'small muted'},'무엇을 중요하게 볼지 직접 정하면 순위가 바뀝니다.'))));
  inp.focus()}
 
@@ -101,7 +101,7 @@ function quiz(){
  step()}
 
 function about(){
- show(h('h1',null,'자료와 계산 방법'),h('p',null,'모든 수치는 열린국회정보 Open API의 공개 자료를 하루 한 번 받아 같은 규칙으로 계산합니다. 사람이나 AI가 의원을 판정하지 않습니다.'),METRICS.map(x=>h('div',{class:'card'},h('b',null,x.label),h('div',{class:'small muted'},x.desc))),
+ show(h('h1',null,'자료와 계산 방법'),h('p',null,'모든 수치는 열린국회정보, 유튜브, 네이버 뉴스의 공개 자료를 하루 한 번 받아 같은 규칙으로 계산합니다. 사람이나 AI가 의원을 판정하지 않습니다.'),METRICS.map(x=>h('div',{class:'card'},h('b',null,x.label),h('div',{class:'small muted'},x.desc))),
   h('h2',null,'표결 궁합 문항은 어떻게 고르나요'),h('p',null,'본회의 표결 가운데 찬성·반대를 합쳐 100명 이상 참여했고 소수 쪽이 15% 이상인 의안을 최근순으로 뽑습니다.'),
   h('h2',null,'한계'),h('p',null,'지역구 활동, 상임위 질의, 법안의 질은 이 수치에 담기지 않습니다. 오류를 발견하면 원문 기록으로 확인해 주세요.'),META&&META.warnings.length?h('div',{class:'note'},META.warnings.map(w=>h('div',null,w))):null,h('p',null,h('a',{href:'https://open.assembly.go.kr',target:'_blank',rel:'noopener'},'열린국회정보')),fix('[정정] '))}
 
