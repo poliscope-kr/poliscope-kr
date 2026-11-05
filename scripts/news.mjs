@@ -14,10 +14,12 @@ let calls = 0;
 class Stop extends Error {}
 async function search(query, start) {
   calls++;
+  const t0 = Date.now();
   const r = await fetch(`${BASE}?` + new URLSearchParams({ query, display: 100, start, sort: 'date', format: 'json' }), { headers: { 'X-NCP-APIGW-API-KEY-ID': ID, 'X-NCP-APIGW-API-KEY': SECRET }, signal: AbortSignal.timeout(30000) });
   if (r.status === 429) throw new Stop('호출 한도 초과');
   if (r.status === 401 || r.status === 403) throw new Stop(`인증 오류 ${r.status}: ${(await r.text()).slice(0, 200)}`);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  if (Date.now() - t0 > 5000) console.log(`느린 응답 ${Date.now() - t0}ms`);
   return r.json();
 }
 // 제목 기준 규칙 분류. 앞의 규칙이 우선한다. 규칙은 공개되어 있고, 틀릴 수 있다.
@@ -33,8 +35,12 @@ const members = JSON.parse(readFileSync(`${OUT}/members.json`, 'utf8'));
 const nameCount = {}; members.forEach(m => nameCount[m.name] = (nameCount[m.name] || 0) + 1);
 const cache = existsSync(CACHE) ? JSON.parse(readFileSync(CACHE, 'utf8')) : {};
 const NOW = Date.now(), SINCE = NOW - WEEKS * 7 * 864e5, SEEN_DAYS = NOW - 21 * 864e5;
-let stopped = null, done = 0, failed = 0;
+let stopped = null, done = 0, failed = 0, partial = false;
+const START = Date.now(), BUDGET_MIN = Number(process.env.NEWS_BUDGET_MIN ?? 40);
+const log = m => console.log(`[${Math.round((Date.now() - START) / 1000)}초] ${m}`);
+log(`기사 수집 시작: ${members.length}명`);
 for (const m of members) {
+  if ((Date.now() - START) / 60000 > BUDGET_MIN) { partial = true; log(`시간 제한으로 ${done}명까지만 받음`); break; }
   const c = cache[m.id] = cache[m.id] || { weeks: {}, seen: {}, recent: [] };
   const areaWord = /비례/.test(m.area) ? null : m.area.split(' ').pop().replace(/[갑을병정무]$/, '').replace(/(특별시|광역시|시|군|구)$/, '');
   const short = String(m.party).replace(/당$/, '').slice(0, 2);
@@ -59,7 +65,7 @@ for (const m of members) {
       }
       if (items.length < 100 || old > 0 || known > 30) break;
     }
-    done++;
+    if (++done % 20 === 0) log(`${done}명 완료, 호출 ${calls}회`);
   } catch (e) {
     if (e instanceof Stop) { stopped = e.message; console.log('중단:', e.message); break; }
     failed++; console.log(`${m.name}: ${e.message}`);
@@ -78,5 +84,5 @@ for (const m of members) {
   out[m.id] = { totals, news: Math.round(Math.min(100, pts / (WEEKS * 3) * 100) * 10) / 10, weeks: Object.keys(c.weeks).length, recent: c.recent };
 }
 if (Object.keys(cache).length) writeFileSync(CACHE, JSON.stringify(cache));
-writeFileSync(`${OUT}/news.json`, JSON.stringify({ updated: new Date().toISOString(), done, failed, stopped, members: out }));
+writeFileSync(`${OUT}/news.json`, JSON.stringify({ updated: new Date().toISOString(), done, failed, stopped, partial, members: out }));
 console.log(`기사 완료: ${done}명, 실패 ${failed}, 호출 ${calls}회${stopped ? ', 중단: ' + stopped : ''}`);
