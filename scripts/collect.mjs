@@ -91,7 +91,7 @@ const codeToM = Object.fromEntries(rawMembers.map(m => [m.MONA_CD, m]));
 // 2. 대표발의 법안
 log('법안 목록 받는 중');
 const bills = await getAll(API.bills, { AGE }, false);
-log(`법안 ${bills.length}건`);
+log(`법안 ${bills.length}건, 항목: ${Object.keys(bills[0] || {}).join(',')}`);
 need('법안', bills[0], ['BILL_ID', 'BILL_NAME', 'PROC_RESULT', 'COMMITTEE', 'PROPOSE_DT']);
 let unmatched = 0, homonymDropped = 0; const unmatchedNames = {};
 for (const b of bills) {
@@ -101,8 +101,15 @@ for (const b of bills) {
   if (b.RST_MONA_CD && stats[b.RST_MONA_CD]) codes.add(b.RST_MONA_CD);
   for (const n of names) { if (names.length > 1 || !codes.size) { if (byName[n]) codes.add(byName[n]); else if (nameCount[n] > 1 && !codes.size) homonymDropped++; } }
   if (!codes.size) { if (!names.some(n => nameCount[n] > 1)) { unmatched++; const n = names.join(','); unmatchedNames[n] = (unmatchedNames[n] || 0) + 1; } continue; }
+  b._codes = [...codes];
+  const coNames = String(b.PUBL_PROPOSER || '').split(/[,，]/).map(n => n.trim()).filter(n => n && !names.includes(n));
+  const endDt = b.PROC_DT || b.LAW_PROC_DT || b.CMT_PROC_DT || '', days = PASS.test(b.PROC_RESULT || '') && b.PROPOSE_DT && endDt ? Math.round((Date.parse(endDt) - Date.parse(b.PROPOSE_DT)) / 864e5) : null;
   for (const code of codes) {
     const s = stats[code]; s.rep++;
+    if (/원안가결|수정가결/.test(b.PROC_RESULT || '')) s.direct = (s.direct || 0) + 1;
+    else if (/대안반영|수정안반영/.test(b.PROC_RESULT || '')) s.merged = (s.merged || 0) + 1;
+    if (days != null && days >= 0) (s.days = s.days || []).push(days);
+    if (coNames.length) { const my = codeToM[code].POLY_NM, known = coNames.map(n => byName[n]).filter(Boolean); if (known.length) { s.coBase = (s.coBase || 0) + 1; if (known.some(c => { const p = codeToM[c].POLY_NM; return p !== my && p !== '무소속'; })) s.coCross = (s.coCross || 0) + 1; } }
     if (PASS.test(b.PROC_RESULT || '')) s.passed++;
     for (const f of fieldsOf(b.BILL_NAME || '')) { const x = s.fields[f] = s.fields[f] || { r: 0, p: 0 }; x.r++; if (PASS.test(b.PROC_RESULT || '')) x.p++; }
     if (b.COMMITTEE) { s.cmitBills++; if (cmitsOf(codeToM[code]).includes(b.COMMITTEE)) s.inCmit++; }
@@ -132,6 +139,7 @@ for (const b of voteBills) {
   if (++fetched % 20 === 0) log(`표결 ${fetched}건 받음`);
   if (fetched % 100 === 0) { mkdirSync('data', { recursive: true }); writeFileSync(CACHE, JSON.stringify(cache)); }
 }
+for (const b of bills) { const v = cache[b.BILL_ID]; if (!v || !b._codes) continue; const cast = v.y.length + v.n.length; if (!cast) continue; for (const c of b._codes) (stats[c].voted = stats[c].voted || []).push({ id: b.BILL_ID, n: b.BILL_NAME, d: v.date, y: v.y.length, no: v.n.length }); }
 mkdirSync(CACHE.split('/').slice(0, -1).join('/') || '.', { recursive: true });
 writeFileSync(CACHE, JSON.stringify(cache));
 for (const v of Object.values(cache)) for (const k of ['y', 'n', 'a', 'x']) for (const c of v[k]) if (stats[c]) stats[c][k]++;
@@ -202,7 +210,9 @@ try { const rows = await getAll('nalacaiwauxiynsxt'); log('사무처 업무추�
 const members = rawMembers.map(m => {
   const s = stats[m.MONA_CD], voted = s.y + s.n + s.a, total = voted + s.x;
   s.recent.sort((a, b) => String(b.d).localeCompare(String(a.d)));
-  return { fields: s.fields, sns: snsBy[m.MONA_CD] || {}, id: m.MONA_CD, name: m.HG_NM, hanja: m.HJ_NM || '', party: m.POLY_NM, area: m.ORIG_NM, type: m.ELECT_GBN_NM || '', terms: m.REELE_GBN_NM, role: m.JOB_RES_NM || '', cmits: cmitsOf(m), tel: m.TEL_NO || '', web: m.HOMEPAGE || '',
+  const median = a => { if (!a?.length) return null; const x = [...a].sort((p, q) => p - q); return x[Math.floor(x.length / 2)]; };
+  const impact = { direct: s.direct || 0, merged: s.merged || 0, days: median(s.days), daysN: s.days?.length || 0, coBase: s.coBase || 0, coCross: s.coCross || 0, voted: (s.voted || []).sort((a, b) => String(b.d).localeCompare(String(a.d))).slice(0, 8), votedN: s.voted?.length || 0, yes: s.voted?.length ? pct(s.voted.reduce((t, v) => t + v.y, 0), s.voted.reduce((t, v) => t + v.y + v.no, 0)) : null };
+  return { impact, fields: s.fields, sns: snsBy[m.MONA_CD] || {}, id: m.MONA_CD, name: m.HG_NM, hanja: m.HJ_NM || '', party: m.POLY_NM, area: m.ORIG_NM, type: m.ELECT_GBN_NM || '', terms: m.REELE_GBN_NM, role: m.JOB_RES_NM || '', cmits: cmitsOf(m), tel: m.TEL_NO || '', web: m.HOMEPAGE || '',
     dBase: s.dBase || 0, dDiff: s.dDiff || 0, dissent: (s.dBase || 0) >= 100 ? pct(s.dDiff || 0, s.dBase) : null, voteTotal: total, voteRate: pct(voted, total), voteAdj: pct(s.adjVoted || 0, s.adjTotal || 0), groupBills: s.groupAbsentBills || 0, rep: s.rep, passRate: s.rep >= 5 ? pct(s.passed, s.rep) : null, passed: s.passed, focus: s.cmitBills >= 5 ? pct(s.inCmit, s.cmitBills) : null, y: s.y, n: s.n, a: s.a, x: s.x, recent: s.recent.slice(0, 10) };
 });
 // 표결 궁합: 찬반이 실제로 갈린 최근 의안을 규칙으로만 고른다(사람이 고르지 않음)
