@@ -26,7 +26,7 @@ async function search(query, start) {
 const RULES = [
   ['case', /기소|재판|구속|수사|압수수색|의혹|논란|고발|고소|징계|윤리위|유죄|무죄|항소|상고|선고|체포|횡령|뇌물/],
   ['fight', /비판|비난|공세|설전|맹공|규탄|사퇴\s*촉구|저격|직격|막말|공방|충돌|반발|일침|탄핵|내란|특검/],
-  ['policy', /법안|개정안|제정안|발의|입법|법률|국정감사|국감|대정부질문|상임위|예결위|토론회|정책|예산안|심사|질의|공청회|제도\s*개선/],
+  ['policy', /법안|개정안|제정안|발의|입법|법률|국정감사|국감|대정부질문|상임위|예결위|토론회|정책|예산안|심사|질의|공청회|제도\s*개선|지적|촉구|대책|개선|방지|강화|건의|해소|법제화|실태|위원장|특위/],
   ['local', /지역구|민원|간담회|방문|예산\s*확보|국비|특별교부세|유치|주민|현장|착공|개통|건립|지원\s*사업|전통시장/],
 ];
 const classify = t => (RULES.find(([, re]) => re.test(t)) || ['etc'])[0];
@@ -36,7 +36,7 @@ const nameCount = {}; members.forEach(m => nameCount[m.name] = (nameCount[m.name
 const cache = existsSync(CACHE) ? JSON.parse(readFileSync(CACHE, 'utf8')) : {};
 const NOW = Date.now(), SINCE = NOW - WEEKS * 7 * 864e5, SEEN_DAYS = NOW - 21 * 864e5;
 let stopped = null, done = 0, failed = 0, partial = false;
-const START = Date.now(), BUDGET_MIN = Number(process.env.NEWS_BUDGET_MIN ?? 40);
+const START = Date.now(), BUDGET_MIN = Number(process.env.NEWS_BUDGET_MIN ?? 90);
 const log = m => console.log(`[${Math.round((Date.now() - START) / 1000)}초] ${m}`);
 log(`기사 수집 시작: ${members.length}명`);
 for (const m of members) {
@@ -53,8 +53,9 @@ for (const m of members) {
       for (const it of items) {
         const at = Date.parse(it.pubDate); if (!Number.isFinite(at) || at < SINCE) { old++; continue; }
         const title = clean(it.title), desc = clean(it.description), text = title + ' ' + desc;
-        if (!title.includes(m.name) || otherLevel.test(text)) continue;    // 제목에 이름이 있는 기사만 센다
-        if (!nameRe.test(text) && !text.includes(m.party) && !(areaWord && text.includes(areaWord))) continue;
+        if (!title.includes(m.name) || otherLevel.test(text)) continue;
+        if (/(?:시|도|구|군)의회|시의원|도의원|구의원|군의원/.test(title) && !/국회의원/.test(title)) continue; // 지방의원 동명이인 제외    // 제목에 이름이 있는 기사만 센다
+        if (!nameRe.test(text) && !title.includes(m.party) && !(areaWord && title.includes(areaWord))) continue; // 본문 소개에 정당명만 있는 다른 사람 기사 제외
         if (nameCount[m.name] > 1 && !(areaWord && text.includes(areaWord))) continue; // 동명이인은 지역이 확인될 때만
         const h = createHash('sha1').update(title).digest('hex').slice(0, 10);
         if (c.seen[h]) { known++; continue; }
@@ -77,8 +78,8 @@ for (const m of members) {
   const c = cache[m.id]; if (!c) continue;
   for (const h of Object.keys(c.seen)) if (c.seen[h] < SEEN_DAYS) delete c.seen[h];
   for (const w of Object.keys(c.weeks)) if (Date.parse(w) < SINCE - 7 * 864e5) delete c.weeks[w];
-  c.recent = c.recent.sort((a, b) => b.d.localeCompare(a.d)).slice(0, 8);
-  const totals = { policy: 0, local: 0, fight: 0, case: 0, etc: 0 }; let pts = 0;
+  c.recent = c.recent.filter(x => x.c !== 'case').sort((a, b) => b.d.localeCompare(a.d)).slice(0, 8); // 사건 관련 제목은 사람 확인 전에는 공개하지 않음
+  const totals = { policy: 0, local: 0, fight: 0, etc: 0 }; let pts = 0;
   for (const v of Object.values(c.weeks)) { for (const k of Object.keys(totals)) totals[k] += v[k] || 0; pts += Math.min(3, (v.policy || 0) + (v.local || 0)); }
   // 정책·입법과 지역 활동 보도만 주 3건까지 센다. 공방·사건 보도는 더하지도 빼지도 않는다.
   out[m.id] = { totals, news: Math.round(Math.min(100, pts / (WEEKS * 3) * 100) * 10) / 10, weeks: Object.keys(c.weeks).length, recent: c.recent };
