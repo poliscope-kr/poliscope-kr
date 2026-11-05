@@ -124,8 +124,15 @@ for (const v of Object.values(cache)) {
   const seated = {}, absent = {};
   for (const k of ['y', 'n', 'a', 'x']) for (const c of v[k]) { const m = codeToM[c]; if (!m) continue; seated[m.POLY_NM] = (seated[m.POLY_NM] || 0) + 1; if (k === 'x') absent[m.POLY_NM] = (absent[m.POLY_NM] || 0) + 1; }
   for (const k of ['y', 'n', 'a', 'x']) for (const c of v[k]) { const m = codeToM[c]; if (!m) continue;
-    if ((absent[m.POLY_NM] || 0) / seated[m.POLY_NM] >= .5) { stats[c].groupAbsentBills = (stats[c].groupAbsentBills || 0) + 1; continue; }
+    if (seated[m.POLY_NM] >= 5 && (absent[m.POLY_NM] || 0) / seated[m.POLY_NM] >= .5) { // 소수 정당은 혼자 불참해도 집단 불참처럼 보이므로 5명 이상일 때만 stats[c].groupAbsentBills = (stats[c].groupAbsentBills || 0) + 1; continue; }
     stats[c].adjTotal = (stats[c].adjTotal || 0) + 1; if (k !== 'x') stats[c].adjVoted = (stats[c].adjVoted || 0) + 1; } }
+
+// 같은 당 다수와 다르게 표결한 비율. 찬성·반대만 비교하고, 그 당 표결자가 5명 이상이며 다수가 뚜렷한(70% 이상) 표결만 쓴다. 정당은 현재 소속 기준이다.
+for (const v of Object.values(cache)) {
+  const cnt = {};
+  for (const k of ['y', 'n']) for (const c of v[k]) { const p = codeToM[c]?.POLY_NM; if (!p || p === '무소속') continue; (cnt[p] = cnt[p] || { y: 0, n: 0 })[k]++; }
+  for (const k of ['y', 'n']) for (const c of v[k]) { const p = codeToM[c]?.POLY_NM; const n = cnt[p]; if (!n) continue; const tot = n.y + n.n; if (tot < 5 || Math.max(n.y, n.n) / tot < .7) continue;
+    stats[c].dBase = (stats[c].dBase || 0) + 1; if ((n.y > n.n ? 'y' : 'n') !== k) stats[c].dDiff = (stats[c].dDiff || 0) + 1; } }
 
 // 3-2. 국회가 공개한 의원 SNS 주소 (없어도 수집은 계속)
 const snsBy = {};
@@ -146,7 +153,7 @@ const members = rawMembers.map(m => {
   const s = stats[m.MONA_CD], voted = s.y + s.n + s.a, total = voted + s.x;
   s.recent.sort((a, b) => String(b.d).localeCompare(String(a.d)));
   return { sns: snsBy[m.MONA_CD] || {}, id: m.MONA_CD, name: m.HG_NM, hanja: m.HJ_NM || '', party: m.POLY_NM, area: m.ORIG_NM, type: m.ELECT_GBN_NM || '', terms: m.REELE_GBN_NM, role: m.JOB_RES_NM || '', cmits: cmitsOf(m), tel: m.TEL_NO || '', web: m.HOMEPAGE || '',
-    voteTotal: total, voteRate: pct(voted, total), voteAdj: pct(s.adjVoted || 0, s.adjTotal || 0), groupBills: s.groupAbsentBills || 0, rep: s.rep, passRate: s.rep >= 5 ? pct(s.passed, s.rep) : null, passed: s.passed, focus: s.cmitBills >= 5 ? pct(s.inCmit, s.cmitBills) : null, y: s.y, n: s.n, a: s.a, x: s.x, recent: s.recent.slice(0, 10) };
+    dBase: s.dBase || 0, dDiff: s.dDiff || 0, dissent: (s.dBase || 0) >= 100 ? pct(s.dDiff || 0, s.dBase) : null, voteTotal: total, voteRate: pct(voted, total), voteAdj: pct(s.adjVoted || 0, s.adjTotal || 0), groupBills: s.groupAbsentBills || 0, rep: s.rep, passRate: s.rep >= 5 ? pct(s.passed, s.rep) : null, passed: s.passed, focus: s.cmitBills >= 5 ? pct(s.inCmit, s.cmitBills) : null, y: s.y, n: s.n, a: s.a, x: s.x, recent: s.recent.slice(0, 10) };
 });
 // 표결 궁합: 찬반이 실제로 갈린 최근 의안을 규칙으로만 고른다(사람이 고르지 않음)
 const quiz = Object.entries(cache).map(([id, v]) => ({ id, ...v, cast: v.y.length + v.n.length })).filter(v => v.cast >= 100 && Math.min(v.y.length, v.n.length) / v.cast >= .15)
