@@ -18,14 +18,14 @@ const log = m => console.log(`[${Math.round((Date.now() - START) / 1000)}초] ${
 async function call(id, params) {
   const url = `${BASE}/${id}?` + new URLSearchParams({ KEY, Type: 'json', ...params });
   let last;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 7; i++) {
     try {
       const r = await fetch(url, { signal: AbortSignal.timeout(30000) });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return await r.json();
-    } catch (e) { last = e; await wait(1500 * (i + 1)); }
+    } catch (e) { last = e; console.log(`${id} 연결 재시도 ${i + 1}/7: ${e.cause?.code || e.message}`); await wait(5000 * 2 ** i); }
   }
-  throw new Error(`${id} 요청 실패: ${last && last.message}`); // 주소에 키가 있으므로 주소는 남기지 않음
+  throw new Error(`${id} 요청 실패: ${last && (last.cause?.code || last.message)}`); // 주소에 키가 있으므로 주소는 남기지 않음
 }
 async function getAll(id, params = {}, quiet = true) {
   const rows = []; let prevFirst = null;

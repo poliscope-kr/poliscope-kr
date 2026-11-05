@@ -23,11 +23,13 @@ jobs:
           ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
         run: node scripts/collect.mjs
       - name: 유튜브 수집
+        if: always()
         continue-on-error: true
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: node scripts/youtube.mjs
       - name: 저장
+        if: always()
         run: |
           git config user.name "poliscope-bot"
           git config user.email "poliscope-bot@users.noreply.github.com"
