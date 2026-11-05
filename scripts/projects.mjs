@@ -55,6 +55,17 @@ for (const g of groups) { const ids = new Set([...g.lead.map(n => idOf[n]), ...g
 const unmatchedSpend = spend.filter(s => inTerm(s.YEAR) && !groups.some(g => norm(g.name) === norm(s.ORG_NM))).length;
 console.log('점수분포', JSON.stringify(groups.map(g => g.score).filter(x => x != null).sort((a, b) => a - b)));
 console.log(`연구단체 ${groups.length}개, 점수 있음 ${groups.filter(g => g.score != null).length}, 집행 합계 ${groups.reduce((t, g) => t + g.total, 0)}, 이름 불일치 집행 ${unmatchedSpend}, 대표 연결 ${groups.filter(g => g.lead.length).length}, 구성 평균 ${Math.round(groups.reduce((t, g) => t + g.crew.length, 0) / (groups.length || 1))}`);
-for (const [n, id, q] of [['지역현안', 'nyioaasianxlkcqxs', {}], ['세미나일정', 'nfcoioopazrwmjrgs', {}], ['정책세미나', 'nbqbmccpamsvwebkn', { HOST_DT: '2025' }]]) { try { const r = await all(id, q); sample(n, r); } catch (e) { console.log(n, '실패', e.message); } }
+// 의원실이 주최한 정책 세미나·토론회와 지역현안 토론회. 비용이 공개되지 않아 점수에는 넣지 않는다.
+const events = {};
+const addEv = (id, e) => { (events[id] = events[id] || []).push(e); };
+const nowY = new Date().getFullYear();
+for (let y = START; y <= nowY; y++) {
+  try { const rows = await all('nbqbmccpamsvwebkn', { HOST_DT: String(y) }); console.log(`세미나 ${y}: ${rows.length}건`);
+    for (const r of rows) { const hosts = [...String(r.HOST_INS_NAME || '').matchAll(/([가-힣]{2,5})\s*의원/g)].map(x => x[1]); for (const n of new Set(hosts)) if (idOf[n]) addEv(idOf[n], { d: String(r.HOST_DT || '').slice(0, 10), t: clean(r.TITLE), u: r.DETAIL_VIEW_URL || '', k: '세미나' }); }
+  } catch (e) { console.log('세미나 실패', y, e.message); }
+}
+try { for (const r of await all('nyioaasianxlkcqxs')) { const id = idOf[String(r.ETC_CHAR7 || '').trim()]; if (id) addEv(id, { d: String(r.ETC_CHAR1 || '').replace(/-/g, '.'), t: clean(r.ARTICLE_TITLE), u: r.LINK_URL || '', k: '지역현안 토론회' }); } } catch (e) { console.log('토론회 실패', e.message); }
+const seen2 = {}; for (const [id, list] of Object.entries(events)) { const u = new Map(); list.forEach(e => u.set(e.d + e.t, e)); const a = [...u.values()].sort((x, y) => y.d.localeCompare(x.d)); seen2[id] = { n: a.length, list: a.slice(0, 8) }; }
+console.log(`행사 연결 의원 ${Object.keys(seen2).length}명, 최다 ${Math.max(0, ...Object.values(seen2).map(x => x.n))}건`);
 if (!groups.length) { console.log('자료가 없어 저장하지 않습니다.'); process.exit(0); }
-writeFileSync(`${OUT}/projects.json`, JSON.stringify({ updated: new Date().toISOString(), groups, per, ids: idOf }));
+writeFileSync(`${OUT}/projects.json`, JSON.stringify({ updated: new Date().toISOString(), groups, per, events: seen2, spendUnmatched: unmatchedSpend }));
