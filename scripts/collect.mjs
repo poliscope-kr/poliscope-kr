@@ -119,12 +119,12 @@ for (const b of voteBills) {
 mkdirSync(CACHE.split('/').slice(0, -1).join('/') || '.', { recursive: true });
 writeFileSync(CACHE, JSON.stringify(cache));
 for (const v of Object.values(cache)) for (const k of ['y', 'n', 'a', 'x']) for (const c of v[k]) if (stats[c]) stats[c][k]++;
-// 같은 정당 의원 절반 이상이 함께 불참한 표결은 개인 결석과 구분해 따로 계산한다(집단 불참 제외 참여율)
+// 같은 정당 의원 절반 이상이 함께 불참한 표결은 개인 결석과 구분해 따로 계산한다. 소수 정당은 혼자 불참해도 집단처럼 보이므로 5명 이상 정당만 적용한다.
 for (const v of Object.values(cache)) {
   const seated = {}, absent = {};
   for (const k of ['y', 'n', 'a', 'x']) for (const c of v[k]) { const m = codeToM[c]; if (!m) continue; seated[m.POLY_NM] = (seated[m.POLY_NM] || 0) + 1; if (k === 'x') absent[m.POLY_NM] = (absent[m.POLY_NM] || 0) + 1; }
   for (const k of ['y', 'n', 'a', 'x']) for (const c of v[k]) { const m = codeToM[c]; if (!m) continue;
-    if (seated[m.POLY_NM] >= 5 && (absent[m.POLY_NM] || 0) / seated[m.POLY_NM] >= .5) { // 소수 정당은 혼자 불참해도 집단 불참처럼 보이므로 5명 이상일 때만 stats[c].groupAbsentBills = (stats[c].groupAbsentBills || 0) + 1; continue; }
+    if (seated[m.POLY_NM] >= 5 && (absent[m.POLY_NM] || 0) / seated[m.POLY_NM] >= .5) { stats[c].groupAbsentBills = (stats[c].groupAbsentBills || 0) + 1; continue; }
     stats[c].adjTotal = (stats[c].adjTotal || 0) + 1; if (k !== 'x') stats[c].adjVoted = (stats[c].adjVoted || 0) + 1; } }
 
 // 같은 당 다수와 다르게 표결한 비율. 찬성·반대만 비교하고, 그 당 표결자가 5명 이상이며 다수가 뚜렷한(70% 이상) 표결만 쓴다. 정당은 현재 소속 기준이다.
