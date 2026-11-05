@@ -164,6 +164,26 @@ try {
   }
 } catch (e) { warnings.push(`SNS 주소를 받지 못했습니다: ${e.message}`); }
 
+// 3-3. 세금아 세금아 어디로 갔니?: 공개 자료 (실패해도 나머지 수집은 계속)
+const tax = { updated: new Date().toISOString(), trips: {}, tripRows: 0, tripUnmatched: 0, nabo: [], spend: [] };
+try {
+  const rows = await getAll('nasnutdbapnfphwyr', { UNIT_CD: '100' + AGE });
+  log(`국외활동 ${rows.length}건, 예시 일정: ${rows.slice(0, 3).map(r => r.SCH_DYS).join(' / ')}`);
+  tax.tripRows = rows.length;
+  for (const r of rows) {
+    const code = byName[String(r.PN || '').trim()]; if (!code) { tax.tripUnmatched++; continue; }
+    const ds = String(r.SCH_DYS || '').match(/\d{4}[.\-/년]\s*\d{1,2}[.\-/월]\s*\d{1,2}/g) || [];
+    const dt = ds.map(d => { const [y, mo, da] = d.match(/\d+/g).map(Number); return Date.UTC(y, mo - 1, da); });
+    const days = dt.length >= 2 && dt[1] >= dt[0] ? Math.round((dt[1] - dt[0]) / 864e5) + 1 : dt.length === 1 ? 1 : null;
+    const t = tax.trips[code] = tax.trips[code] || { n: 0, days: 0, unknownDays: 0, list: [] };
+    t.n++; if (days == null) t.unknownDays++; else t.days += days;
+    t.list.push({ when: r.SCH_DYS || '', to: r.DSTN_NM || '', why: r.PURP_RSON || '', paid: r.EXPNS_SUPPT_INST_NM || '', report: r.REPORT_YN || '', at: dt[0] || 0 });
+  }
+  for (const t of Object.values(tax.trips)) { t.list.sort((a, b) => b.at - a.at); t.list.forEach(x => delete x.at); }
+} catch (e) { warnings.push(`국외활동 자료를 받지 못했습니다: ${e.message}`); }
+try { const rows = await getAll('npsofwddayuhqhfgh'); tax.nabo = rows.sort((a, b) => String(b.REG_DATE).localeCompare(String(a.REG_DATE))).slice(0, 6).map(r => ({ d: r.REG_DATE, t: r.SUBJECT, u: r.LINK_URL })); } catch (e) { log('NABO 자료 실패: ' + e.message); }
+try { const rows = await getAll('nalacaiwauxiynsxt'); log('사무처 업무추진비 항목: ' + Object.keys(rows[0] || {}).join(',')); tax.spend = rows.sort((a, b) => String(b.PRDC_YM_NM || b.PRDC_YM).localeCompare(String(a.PRDC_YM_NM || a.PRDC_YM))).slice(0, 6).map(r => ({ ym: r.PRDC_YM_NM || r.PRDC_YM, t: r.OPB_FL_NM, u: r.OPB_FL_PH })); } catch (e) { log('업무추진비 자료 실패: ' + e.message); }
+
 // 4. 화면용 자료
 const members = rawMembers.map(m => {
   const s = stats[m.MONA_CD], voted = s.y + s.n + s.a, total = voted + s.x;
@@ -179,6 +199,7 @@ if (quiz.length < 10) warnings.push(`찬반이 갈린 의안이 ${quiz.length}�
 mkdirSync(OUT, { recursive: true });
 writeFileSync(`${OUT}/members.json`, JSON.stringify(members));
 writeFileSync(`${OUT}/quiz.json`, JSON.stringify(quiz));
+writeFileSync(`${OUT}/tax.json`, JSON.stringify(tax));
 writeFileSync(`${OUT}/fields.json`, JSON.stringify(Object.fromEntries(Object.entries(FIELDS).map(([k, [n, re]]) => [k, { name: n, words: re.source.split('|') }]))));
 { const un = {}; let hit = 0; for (const b of bills) { if (fieldsOf(b.BILL_NAME || '').length) hit++; else { const n = String(b.BILL_NAME || '').split(' ')[0]; un[n] = (un[n] || 0) + 1; } }
   log(`생활 분야 분류: ${hit}/${bills.length}건 (${Math.round(hit / bills.length * 100)}%). 미분류 상위: ` + Object.entries(un).sort((a, b) => b[1] - a[1]).slice(0, 30).map(([n, c]) => `${n} ${c}`).join(', ')); }
