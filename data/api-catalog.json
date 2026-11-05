@@ -1,19 +1,21 @@
 [
  {
-  "name": "국회기록원 업무추진비 집행현황",
-  "service": "OPNZLSTNARA",
+  "name": "예결산특별위원회 회의록",
+  "service": "VCONFBUDGETCONFLIST",
   "request": [
-   "PRDC_YM_NM:생산년월",
-   "OPB_FL_NM:공개파일명",
-   "INST_NM:기관명"
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
   ],
   "output": [
-   "PRDC_YM_NM:생산년월",
-   "OPB_FL_NM:공개파일명",
-   "INST_CD:기관코드",
-   "INST_NM:기관명",
-   "OPB_FL_PH:공개파일경로",
-   "FILE_ID:파일ID"
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
   ],
   "keys": [
    "infNm",
@@ -29,8 +31,364 @@
   ]
  },
  {
-  "name": "NABO 비용추계 및 재정전망",
-  "service": "npsofwddayuhqhfgh",
+  "name": "토론회 결과보고서",
+  "service": "NABOPBLMDCSNREPORT",
+  "request": [
+   "PBLM_TTL:발간물 제목"
+  ],
+  "output": [
+   "PBLM_TTL:발간물 제목",
+   "WRT_DEPT:작성부서",
+   "WRT_DT:작성일",
+   "LINK_URL:링크URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "예결산 종합심사 회의정보 조회",
+  "service": "BUDGETJUDGECONF",
+  "request": [
+   "BILL_ID:의안ID*"
+  ],
+  "output": [
+   "BDG_CONF_RSLT:종합심사 회의결과",
+   "BDG_CONF_DT:종합심사 회의일",
+   "BDG_CONF_NM:종합심사 회의명",
+   "PPSL_DT:제안일",
+   "PPSR:제안자",
+   "BILL_NM:의안명",
+   "BILL_NO:의안번호",
+   "BILL_ID:의안ID",
+   "ERACO:대수"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "예결산 예비심사 정보 조회",
+  "service": "BUDGETADJUDGE",
+  "request": [
+   "BILL_ID:의안ID*"
+  ],
+  "output": [
+   "ERACO:대수",
+   "BILL_ID:의안ID",
+   "BILL_NO:의안번호",
+   "BILL_NM:의안명",
+   "PPSR_KIND:제안자구분",
+   "PPSL_DT:제안일",
+   "ADCMIT_NM:예비심사 위원회명",
+   "ADCMIT_CMMT_DT:예비심사 회부일",
+   "ADCMIT_PRSNT_DT:예비심사 상정일",
+   "ADCMIT_PROC_DT:예비심사 의결일",
+   "ADCMIT_PROC_RSLT:예비심사 결과",
+   "LINK_URL:링크URL",
+   "HWPURL1:예비심사검토보고서",
+   "HWPURL2:예비심사보고서"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "예결산 심사정보",
+  "service": "BUDGETJUDGE",
+  "request": [
+   "ERACO:대수",
+   "BILL_ID:의안ID"
+  ],
+  "output": [
+   "ERACO:대수",
+   "BILL_ID:의안ID",
+   "BILL_NO:의안번호",
+   "BILL_NM:의안명",
+   "PPSR_KIND:제안자구분",
+   "PPSL_DT:제안일",
+   "BDG_CMIT_NM:예결위심사 위원회명",
+   "BDG_CMMT_DT:예결위심사 회부일",
+   "BDG_PRSNT_DT:예결위심사 상정일",
+   "BDG_RSLN_DT:예결위심사 의결일",
+   "BDG_PROC_RSLT:예결위심사 처리결과",
+   "LINK_URL:링크URL",
+   "HWP_URL:문서URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "청원 통계",
+  "service": "PTTCNTMAIN",
+  "request": [
+   "ERACO:대수*"
+  ],
+  "output": [
+   "ERACO:대수",
+   "CMIT_NM:위원회명",
+   "RCP_CNT:접수 건수",
+   "ACP_CNT:채택 건수",
+   "NOT_SUBMIT_CNT:본회의불부의 건수",
+   "WTHD_CNT:철회 건수",
+   "DSU_CNT:폐기 건수",
+   "REFT_SUBT:처리건수 소계",
+   "NOT_FINISH_CNT:계류 건수"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "청원 심사정보",
+  "service": "PTTJUDGE",
+  "request": [
+   "ERACO:대수"
+  ],
+  "output": [
+   "ERACO:대수",
+   "PTT_ID:청원ID",
+   "PTT_NO:청원번호",
+   "PTT_NM:청원명",
+   "PTT_KIND:청원종류",
+   "PTTR_NM:청원자명",
+   "INTD_ASBLM_NM:소개의원명",
+   "CITZN_AGM_CNT:국민동의건수",
+   "RCP_DT:접수일",
+   "JRCMIT_NM:소관위원회명",
+   "JRCMIT_CMMT_DT:소관위원회 회부일",
+   "JRCMIT_PRSNT_DT:소관위원회 상정일",
+   "JRCMIT_PROC_DT:소관위원회 처리일",
+   "JRCMIT_PROC_RSLT:소관위원회 처리결과",
+   "LINK_URL:링크URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "청원 상세정보",
+  "service": "PTTINFODETAIL",
+  "request": [
+   "PTT_ID:청원ID*"
+  ],
+  "output": [
+   "PTT_ID:청원ID",
+   "PTT_NO:청원번호",
+   "PTT_NM:청원명",
+   "PTT_KIND:청원종류",
+   "PTTR_NM:청원자명",
+   "INTD_ASBLM_NM:소개의원명",
+   "CITZN_AGM_CNT:국민동의건수",
+   "RCP_DT:접수일",
+   "JRCMIT_NM:소관위원회명",
+   "JRCMIT_CMMT_DT:소관위원회 회부일",
+   "JRCMIT_PRSNT_DT:소관위원회 상정일",
+   "JRCMIT_PROC_DT:소관위원회 처리일",
+   "JRCMIT_PROC_RSLT:소관위원회 처리결과",
+   "RGS_PRSNT_DT:본회의 심의 상정일",
+   "RGS_RSLN_DT:본회의 심의 의결일",
+   "RGS_CONF_NM:본회의 심의 회의명",
+   "RGS_CONF_RSLT:본회의 심의결과",
+   "GVRN_TRSF_DT:정부 이송일",
+   "GVRN_OC_NM:정부 부처명",
+   "GVRN_RSLT_DT:정부처리결과 보고일",
+   "PROC_NTC_DT:처리 통지일",
+   "ACHV_RATIO:달성도"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "청원 소개의원 정보",
+  "service": "PTTINFOPPSR",
+  "request": [
+   "PTT_ID:청원ID*"
+  ],
+  "output": [
+   "PTT_ID:청원ID",
+   "PTT_NO:청원번호",
+   "PTTR_NM:청원자명",
+   "REP_DIV:대표구분",
+   "INTD_ASBLM_NM:소개의원명"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "청원 접수목록",
+  "service": "PTTRCP",
+  "request": [
+   "ERACO:대수*"
+  ],
+  "output": [
+   "CITZN_AGM_CNT:국민동의건수",
+   "ERACO:대수",
+   "LINK_URL:링크URL",
+   "INTD_ASBLM_NM:소개의원명",
+   "RCP_DT:접수일",
+   "PTT_ID:청원ID",
+   "PTT_NM:청원명",
+   "PTT_NO:청원번호",
+   "PTTR_NM:청원자명",
+   "PTT_KIND:청원종류"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회의원 청원현황",
+  "service": "NAMEMBERLEGIPTT",
+  "request": [
+   "NAAS_CD:국회의원코드*"
+  ],
+  "output": [
+   "ERACO:대수",
+   "PTT_NO:청원번호",
+   "PTT_TTL:청원제목",
+   "PTTR_NM:청원자명",
+   "INTD_ASBLM_NM:소개의원명",
+   "RCP_DT:접수일자",
+   "JRCMIT_CMMT_DT:소관위원회회부일",
+   "JRCMIT_NM:소관위원회명",
+   "RSLN_DT:의결일자",
+   "RSLN_RSLT:의결결과",
+   "LINK_URL:링크URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "의안 심사정보(예ㆍ결산 제외)",
+  "service": "BILLJUDGE",
+  "request": [
+   "ERACO:대수"
+  ],
+  "output": [
+   "ERACO:대수",
+   "BILL_ID:의안ID",
+   "BILL_NO:의안번호",
+   "BILL_NM:의안명",
+   "PPSR_KIND:제안자구분",
+   "PPSL_DT:제안일",
+   "JRCMIT_NM:소관위원회명",
+   "BDG_CMMT_DT:소관위원회 회부일",
+   "JRCMIT_PRSNT_DT:소관위원회 상정일",
+   "JRCMIT_PROC_DT:소관위원회 처리일",
+   "JRCMIT_PROC_RSLT:소관위원회 처리결과",
+   "LINK_URL:링크URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "NABO 결산 분석",
+  "service": "negjnychalvyrcifv",
   "request": [
    "DEPARTMENT_NAME:부서명",
    "SUBJECT:보고서명"
@@ -55,18 +413,366 @@
   ]
  },
  {
-  "name": "국회예산정책처 업무추진비 집행현황",
-  "service": "nknmvzexapgiarqcd",
+  "name": "지역현안 입법지원 토론회 개최 내역",
+  "service": "nyioaasianxlkcqxs",
   "request": [
-   "PRDC_YM:생산년월",
-   "OPB_FL_NM:공개파일명"
+   "ARTICLE_TITLE:제목",
+   "CATEGORY_NM:대수",
+   "ETC_CHAR7:국회의원",
+   "ETC_CHAR12:개최장소"
   ],
   "output": [
-   "PRDC_YM_NM:생산년월",
-   "OPB_FL_NM:공개파일명",
-   "INST_CD:기관코드",
-   "INST_NM:기관명",
-   "OPB_FL_PH:공개파일경로",
+   "ARTICLE_TITLE:제목",
+   "CATEGORY_NM:대수",
+   "ETC_CHAR7:국회의원",
+   "ETC_CHAR12:개최장소",
+   "LINK_URL:상세보기URL",
+   "ETC_CHAR1:개최일",
+   "ETC_CHAR2:개최시"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회의원 정책 세미나 개최 현황",
+  "service": "nbqbmccpamsvwebkn",
+  "request": [
+   "TITLE:제목",
+   "HOST_DT:개최일시*",
+   "HOST_INS_NAME:주최",
+   "ATTENDANCE_NAME1:발제자",
+   "ATTENDANCE_NAME2:토론자"
+  ],
+  "output": [
+   "TITLE:제목",
+   "SEMINAR_DIV_CODE:구분",
+   "HOST_DT:개최일시",
+   "HOST_PLACE_NAME:장소",
+   "HOST_INS_NAME:주최",
+   "ATTENDANCE_NAME1:발제자",
+   "ATTENDANCE_NAME2:토론자",
+   "DETAIL_VIEW_URL:상세보기URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회입법조사처 세미나·간담회",
+  "service": "nyapimeoaczouxzhb",
+  "request": [
+   "BOOKNM:자료명",
+   "INSERTDT:등록일자"
+  ],
+  "output": [
+   "PDFFILEURL:PDF파일URL",
+   "VIEWERURL:뷰어URL",
+   "BOOKNM:자료명",
+   "INSERTDT:등록일자"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회의원 세미나 일정",
+  "service": "nfcoioopazrwmjrgs",
+  "request": [
+   "TITLE:제목",
+   "DESCRIPTION:설명",
+   "SDATE:개최일",
+   "NAME:주최기관",
+   "LOCATION:개최장소"
+  ],
+  "output": [
+   "TITLE:제목",
+   "LINK:의원실링크",
+   "DESCRIPTION:설명",
+   "SDATE:개최일",
+   "STIME:개최시간",
+   "NAME:주최기관",
+   "LOCATION:개최장소",
+   "IMGLINK:이미지주소",
+   "PHONE:문의전화번호"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "본회의 처리안건_결산",
+  "service": "nkalemivaqmoibxro",
+  "request": [
+   "AGE:대수*",
+   "BILL_NO:의안번호",
+   "BILL_NAME:의안명",
+   "BILL_KIND:의안활동구분",
+   "PROC_RESULT_CD:의결결과",
+   "PROPOSE_DT:제안일",
+   "RGS_PROC_DT:본회의심의_의결일",
+   "BILL_ID:의안ID"
+  ],
+  "output": [
+   "AGE:대수",
+   "BILL_NO:의안번호",
+   "BILL_NAME:의안명",
+   "BILL_KIND:의안활동구분",
+   "PROC_RESULT_CD:의결결과",
+   "VOTE_TCNT:총투표수",
+   "YES_TCNT:찬성표수",
+   "NO_TCNT:반대수",
+   "BLANK_TCNT:기권수",
+   "PROPOSE_DT:제안일",
+   "BDG_SUBMIT_DT:예결위심사_회부일",
+   "BDG_PRESENT_DT:예결위심사_상정일",
+   "BDG_PROC_DT:예결위심사_의결일",
+   "RGS_PRESENT_DT:본회의심의_상정일",
+   "RGS_PROC_DT:본회의심의_의결일",
+   "CURR_TRANS_DT:정부이송일",
+   "BILL_ID:의안ID",
+   "LINK_URL:링크URL",
+   "CURR_COMMITTEE_ID:소관위원회ID",
+   "COMMITTEE_NM:소관위원회"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "NATV 뉴스_토론회/세미나",
+  "service": "nzdppcljavkxnylqs",
+  "request": [
+   "COMP_MAIN_TITLE:제목",
+   "REG_DATE:등록일자",
+   "COMP_CONTENT:내용"
+  ],
+  "output": [
+   "COMP_MAIN_TITLE:제목",
+   "REG_DATE:등록일자",
+   "COMP_CONTENT:내용",
+   "LINK_URL:상세보기"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회의원 연구단체 등록현황",
+  "service": "numwhtqhavaqssfle",
+  "request": [
+   "REGDAESU:대수*",
+   "RE_TOPIC_NAME:분야별",
+   "RE_NAME:연구단체",
+   "RE_OBJECTIVE:연구목적",
+   "MAIN_MEM:대표의원",
+   "RE_MEM:연구책임의원",
+   "OBJ_MEM:구성의원"
+  ],
+  "output": [
+   "REGDAESU:대수",
+   "RE_TOPIC_NAME:분야별",
+   "RE_NAME:연구단체",
+   "RE_OBJECTIVE:연구목적",
+   "MAIN_MEM:대표의원",
+   "RE_MEM:연구책임의원",
+   "OBJ_MEM:구성의원",
+   "MEMBER_CNT:구성인원",
+   "LINK_URL:링크주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "연구단체 연구활동 보고서",
+  "service": "ncrwiahparxrpodcv",
+  "request": [
+   "REGDAESU:대수*",
+   "REPORT_TITLE:보고서명",
+   "YEAR:연도",
+   "RE_NAME:연구단체명"
+  ],
+  "output": [
+   "REGDAESU:대수",
+   "REPORT_TITLE:보고서명",
+   "YEAR:연도",
+   "RE_NAME:연구단체명",
+   "PDF_DOWN_URL:PDF_DOWN_URL",
+   "REPORT_CLASSIFICATION_NM:보고서분류"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "청원 처리현황",
+  "service": "ncryefyuaflxnqbqo",
+  "request": [
+   "BILL_NO:청원번호",
+   "BILL_ID:의안ID",
+   "AGE:대*",
+   "BILL_NAME:청원명",
+   "PROPOSER:청원인",
+   "APPROVER:소개의원",
+   "PROC_RESULT_CD:의결결과",
+   "CURR_COMMITTEE_ID:소관위코드",
+   "CURR_COMMITTEE:소관위"
+  ],
+  "output": [
+   "BILL_NO:청원번호",
+   "BILL_ID:의안ID",
+   "AGE:대",
+   "BILL_NAME:청원명",
+   "PROPOSER:청원인",
+   "APPROVER:소개의원",
+   "PROPOSE_DT:접수일자",
+   "PROC_RESULT_CD:의결결과",
+   "CURR_COMMITTEE_ID:소관위코드",
+   "CURR_COMMITTEE:소관위",
+   "COMMITTEE_DT:위원회회부일",
+   "LINK_URL:상세보기URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "청원 계류현황",
+  "service": "nvqbafvaajdiqhehi",
+  "request": [
+   "BILL_NO:청원번호",
+   "BILL_ID:의안ID",
+   "BILL_NAME:청원명",
+   "PROPOSER:청원인",
+   "APPROVER:소개의원",
+   "CURR_COMMITTEE_ID:소관위코드",
+   "CURR_COMMITTEE:소관위",
+   "PASS_GUBUN:의안구분"
+  ],
+  "output": [
+   "BILL_NO:청원번호",
+   "BILL_ID:의안ID",
+   "AGE:대",
+   "BILL_NAME:청원명",
+   "PROPOSER:청원인",
+   "APPROVER:소개의원",
+   "PROPOSE_DT:접수일자",
+   "CURR_COMMITTEE_ID:소관위코드",
+   "CURR_COMMITTEE:소관위",
+   "COMMITTEE_DT:위원회회부일",
+   "LINK_URL:상세보기URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "의원친선협회 임·회원 명단",
+  "service": "nbicgazsalnfamoyp",
+  "request": [
+   "RPT_TITLE:제목",
+   "STND_DT:기준일자",
+   "WRT_NM:작성자",
+   "UNIT_NM:대"
+  ],
+  "output": [
+   "RPT_NO:다운로드",
+   "RPT_TITLE:제목",
+   "STND_DT:기준일자",
+   "WRT_NM:작성자",
+   "UNIT_CD:대별코드",
+   "UNIT_NM:대",
    "FILE_ID:파일ID"
   ],
   "keys": [
@@ -83,109 +789,22 @@
   ]
  },
  {
-  "name": "국회입법조사처 업무추진비 집행현황",
-  "service": "nlmqzojlayoicbxhw",
+  "name": "의원외교협의회 명단",
+  "service": "nxcxrdmpaonzzbkic",
   "request": [
-   "PRDC_YM_NM:생산년월",
-   "OPB_FL_NM:공개파일명",
-   "INST_NM:기관명"
+   "RPT_TITLE:제목",
+   "STND_DT:기준일자",
+   "WRT_NM:작성자",
+   "UNIT_NM:대"
   ],
   "output": [
-   "PRDC_YM_NM:생산년월",
-   "OPB_FL_NM:공개파일명",
-   "INST_CD:기관코드",
-   "INST_NM:기관명",
-   "OPB_FL_PH:공개파일경로",
+   "RPT_NO:다운로드",
+   "RPT_TITLE:제목",
+   "STND_DT:기준일자",
+   "WRT_NM:작성자",
+   "UNIT_CD:대별코드",
+   "UNIT_NM:대",
    "FILE_ID:파일ID"
-  ],
-  "keys": [
-   "infNm",
-   "srvCd",
-   "apiEp",
-   "apiRes",
-   "apiTrf",
-   "variables",
-   "columns",
-   "urls",
-   "filters",
-   "messages"
-  ]
- },
- {
-  "name": "국회도서관 업무추진비 집행현황",
-  "service": "ngqoyjbkaxutcpmot",
-  "request": [
-   "PRDC_YM:생산년월",
-   "OPB_FL_NM:공개파일명"
-  ],
-  "output": [
-   "PRDC_YM_NM:생산년월",
-   "OPB_FL_NM:공개파일명",
-   "INST_CD:기관코드",
-   "INST_NM:기관명",
-   "OPB_FL_PH:공개파일경로",
-   "FILE_ID:파일ID"
-  ],
-  "keys": [
-   "infNm",
-   "srvCd",
-   "apiEp",
-   "apiRes",
-   "apiTrf",
-   "variables",
-   "columns",
-   "urls",
-   "filters",
-   "messages"
-  ]
- },
- {
-  "name": "국회사무처 업무추진비 집행현황",
-  "service": "nalacaiwauxiynsxt",
-  "request": [
-   "PRDC_YM_NM:생산년월",
-   "OPB_FL_NM:공개파일명"
-  ],
-  "output": [
-   "PRDC_YM_NM:생산년월",
-   "OPB_FL_NM:공개파일명",
-   "INST_CD:기관코드",
-   "INST_NM:기관명",
-   "OPB_FL_PH:공개파일경로",
-   "FILE_ID:파일ID"
-  ],
-  "keys": [
-   "infNm",
-   "srvCd",
-   "apiEp",
-   "apiRes",
-   "apiTrf",
-   "variables",
-   "columns",
-   "urls",
-   "filters",
-   "messages"
-  ]
- },
- {
-  "name": "국회의원 상임위 활동",
-  "service": "nuvypcdgahexhvrjt",
-  "request": [
-   "DAE_NUM:대수*",
-   "SES_NUM:회기",
-   "DEGREE_NUM:차수",
-   "COMM_NAME:위원회",
-   "CONF_DATE:회의일",
-   "CLASS_NAME:회의종류"
-  ],
-  "output": [
-   "DAE_NUM:대수",
-   "SES_NUM:회기",
-   "DEGREE_NUM:차수",
-   "COMM_NAME:위원회",
-   "CONF_DATE:회의일",
-   "BILL_URL:안건보기",
-   "CLASS_NAME:회의종류"
   ],
   "keys": [
    "infNm",
@@ -219,6 +838,122 @@
    "EXPNS_SUPPT_INST_NM:경비지원기관",
    "REPORT_YN:결과보고서",
    "UNIT_NM:대"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "연도별 연구단체 건수",
+  "service": "nhllwdafacadantme",
+  "request": [
+   "GUBUN:구분",
+   "YEAR:연도"
+  ],
+  "output": [
+   "GUBUN:구분",
+   "YEAR:연도",
+   "GROUP_CNT:단체수"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "연구단체 활동실적",
+  "service": "nnzoijvcaiexypqaf",
+  "request": [
+   "DIV:구분",
+   "POL_RSC_RPT:정책연구보고서",
+   "DIV2:연도"
+  ],
+  "output": [
+   "DIV:구분",
+   "POL_RSC_RPT:정책연구보고서",
+   "LEG_INIT:법안제개정 등 발의",
+   "SEMINAR:세미나 공청회등(전시회 포함)",
+   "CONF:간담회 등(언론보도 포함)",
+   "RESC:각종조사활동 등",
+   "DIV2:연도"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "연구단체 연구활동비 집행현황",
+  "service": "nipnblofawwyxdhmx",
+  "request": [
+   "YEAR:연도",
+   "MAJR:분야",
+   "ORG_NM:단체"
+  ],
+  "output": [
+   "YEAR:연도",
+   "MAJR:분야",
+   "ORG_NM:단체",
+   "NOR_ENTERATM:일반수용비",
+   "BUS_GOATM:사업추진비",
+   "SPE_WORKATM:특정업무경비",
+   "POLICY_RESRCH_ATM:정책연구비"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "우수연구단체 현황",
+  "service": "nvbqusufapyxesqek",
+  "request": [
+   "YEAR:연도",
+   "DIV:구분",
+   "FLD:분야",
+   "GRP:단체",
+   "LAWMAKER:대표의원"
+  ],
+  "output": [
+   "YEAR:연도",
+   "DIV:구분",
+   "FLD:분야",
+   "GRP:단체",
+   "LAWMAKER:대표의원",
+   "PRZ_MONEY:상금액"
   ],
   "keys": [
    "infNm",
