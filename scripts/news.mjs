@@ -65,6 +65,7 @@ for (const m of members) {
     failed++; console.log(`${m.name}: ${e.message}`);
   }
 }
+if (stopped && !done) { console.log(`기사 수집 실패, 기존 자료 유지: ${stopped}`); process.exit(0); }
 const out = {};
 for (const m of members) {
   const c = cache[m.id]; if (!c) continue;
