@@ -29,7 +29,7 @@ const nameCount = {}; members.forEach(m => nameCount[m.name] = (nameCount[m.name
 let cache = existsSync(CACHE) ? JSON.parse(readFileSync(CACHE, 'utf8')) : {};
 if (cache._ver !== RULES_VER) { console.log('분류 규칙이 바뀌어 기사를 다시 받습니다.'); cache = { _ver: RULES_VER }; }
 const marks = m => [...areaWords(m.area), ...(HINTS[m.id] || [])];
-const NOW = Date.now(), SINCE = NOW - WEEKS * 7 * 864e5, SEEN_DAYS = NOW - 21 * 864e5;
+const NOW = Date.now(), SINCE = NOW - WEEKS * 7 * 864e5, SEEN_DAYS = NOW - (WEEKS + 2) * 7 * 864e5;
 let stopped = null, done = 0, failed = 0, partial = false;
 const START = Date.now(), BUDGET_MIN = Number(process.env.NEWS_BUDGET_MIN ?? 90);
 const log = m => console.log(`[${Math.round((Date.now() - START) / 1000)}초] ${m}`);
