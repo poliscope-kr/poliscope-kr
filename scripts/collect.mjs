@@ -214,7 +214,7 @@ try {
     }
   }
   // 출장 그 후: 출장 목적의 단어가 법 이름에 들어간 대표발의 법안을 출장 뒤 6개월 안에서 찾는다. 인과관계를 뜻하지 않는다.
-  const STOP = /^(국제회의|국제기구|의원외교|의회외교|협력방안|대통령|정상회의|간담회|심포지움|심포지엄|세미나|민간외교|공공외교|주요국|대한민국|국회의원|위원회|참석차|한반도|교류회)$/;
+  const STOP = /^(국제회의|국제기구|의원외교|의회외교|협력방안|대통령|정상회의|간담회|심포지움|심포지엄|세미나|민간외교|공공외교|주요국|대한민국|국회의원|위원회|참석차|한반도|교류회|경쟁력|글로벌|활성화|프로그램|산업의|대학교)$/;
   const billsBy = {}; for (const b of bills) for (const c of b._codes || []) (billsBy[c] = billsBy[c] || []).push(b);
   let matched = 0; for (const [code, t] of Object.entries(tax.trips)) for (const x of t.list) {
     const end = x.at; if (!end) continue; const words = [...new Set(String(x.why).match(/[가-힣]{3,}/g) || [])].filter(w => !STOP.test(w)); if (!words.length) continue;
