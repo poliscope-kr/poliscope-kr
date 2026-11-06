@@ -74,6 +74,18 @@ const FIELDS = {
 };
 const fieldsOf = n => Object.entries(FIELDS).filter(([, [, re]]) => re.test(n)).map(([k]) => k);
 
+// 약자 분야: 법률 이름의 단어로만 나눈다. 규칙은 docs/data/weak.json으로 공개한다.
+const WEAK = {
+  disabled: ['장애인', /장애인|장애아동|발달장애|특수교육/],
+  elder: ['노인', /노인|기초연금|치매/],
+  child: ['아동·청소년·한부모', /아동|청소년|한부모|영유아|보육|입양|학교밖/],
+  poor: ['저소득·취약계층', /기초생활|긴급복지|사회보장급여|주거급여|노숙|취약계층|서민금융/],
+  care: ['돌봄·간병', /돌봄|간병|장기요양|호스피스/],
+  worker: ['취약 노동자·산재', /산업재해|산업안전|임금채권|최저임금|파견근로|기간제|외국인근로자|가사근로|건설근로자|특수형태/],
+  victim: ['범죄·재난 피해자', /범죄피해|가정폭력|성폭력|스토킹|전세사기|아동학대|자살|피해자/],
+};
+const weakOf = n => Object.entries(WEAK).filter(([, [, re]]) => re.test(n)).map(([k]) => k);
+
 // 1. 의원
 log('의원 명단 받는 중');
 const rawMembers = await getAll(API.members, {}, false);
@@ -112,6 +124,7 @@ for (const b of bills) {
     if (coNames.length) { const my = codeToM[code].POLY_NM, known = coNames.map(n => byName[n]).filter(Boolean); if (known.length) { s.coBase = (s.coBase || 0) + 1; if (known.some(c => { const p = codeToM[c].POLY_NM; return p !== my && p !== '무소속'; })) s.coCross = (s.coCross || 0) + 1; } }
     if (PASS.test(b.PROC_RESULT || '')) s.passed++;
     for (const f of fieldsOf(b.BILL_NAME || '')) { const x = s.fields[f] = s.fields[f] || { r: 0, p: 0 }; x.r++; if (PASS.test(b.PROC_RESULT || '')) x.p++; }
+    { const ws = weakOf(b.BILL_NAME || ''); if (ws.length) { const w = s.weak = s.weak || { c: {}, q: new Set() }; const dt = String(b.PROPOSE_DT || ''); if (dt) w.q.add(dt.slice(0, 4) + 'Q' + Math.ceil(+dt.slice(5, 7) / 3)); for (const k of ws) { const x = w.c[k] = w.c[k] || { r: 0, p: 0 }; x.r++; if (PASS.test(b.PROC_RESULT || '')) x.p++; } } }
     if (b.COMMITTEE) { s.cmitBills++; if (cmitsOf(codeToM[code]).includes(b.COMMITTEE)) s.inCmit++; }
     s.recent.push({ n: b.BILL_NAME, d: b.PROPOSE_DT, r: b.PROC_RESULT || '계류', u: b.DETAIL_LINK || '' });
   }
@@ -200,6 +213,15 @@ try {
       t.list.push({ ...item, at });
     }
   }
+  // 출장 그 후: 출장 목적의 단어가 법 이름에 들어간 대표발의 법안을 출장 뒤 6개월 안에서 찾는다. 인과관계를 뜻하지 않는다.
+  const STOP = /^(국제회의|국제기구|의원외교|의회외교|협력방안|대통령|정상회의|간담회|심포지움|심포지엄|세미나|민간외교|공공외교|주요국|대한민국|국회의원|위원회|참석차|한반도|교류회)$/;
+  const billsBy = {}; for (const b of bills) for (const c of b._codes || []) (billsBy[c] = billsBy[c] || []).push(b);
+  let matched = 0; for (const [code, t] of Object.entries(tax.trips)) for (const x of t.list) {
+    const end = x.at; if (!end) continue; const words = [...new Set(String(x.why).match(/[가-힣]{3,}/g) || [])].filter(w => !STOP.test(w)); if (!words.length) continue;
+    const found = (billsBy[code] || []).filter(b => { const d = Date.parse(b.PROPOSE_DT); const name = String(b.BILL_NAME || '').replace(/\s*(일부|전부)?(개정|제정|폐지)?법률안.*$/, ''); return d >= end && d <= end + 183 * 864e5 && words.some(w => name.includes(w)); });
+    if (found.length) { matched++; x.after = found.slice(0, 3).map(b => ({ n: b.BILL_NAME, d: b.PROPOSE_DT, u: b.DETAIL_LINK || '' })); }
+  }
+  log(`출장 후 관련 법안 연결 ${matched}건`);
   const all = Object.values(tax.trips); log(`국외활동 연결 의원 ${all.length}명, 일수 미상 ${all.reduce((a, t) => a + t.unknownDays, 0)}, 이름 미연결 ${tax.tripUnmatched}(${Object.keys(tax.unmatchedNames).join(', ')}), 동명이인 ${tax.homonymTrips.length}건, 항목: ${Object.keys(rows[0] || {}).join(',')}`);
   for (const t of Object.values(tax.trips)) { t.list.sort((a, b) => b.at - a.at); t.list.forEach(x => delete x.at); }
 } catch (e) { warnings.push(`국외활동 자료를 받지 못했습니다: ${e.message}`); }
@@ -212,7 +234,7 @@ const members = rawMembers.map(m => {
   s.recent.sort((a, b) => String(b.d).localeCompare(String(a.d)));
   const median = a => { if (!a?.length) return null; const x = [...a].sort((p, q) => p - q); return x[Math.floor(x.length / 2)]; };
   const impact = { direct: s.direct || 0, merged: s.merged || 0, days: median(s.days), daysN: s.days?.length || 0, coBase: s.coBase || 0, coCross: s.coCross || 0, voted: (s.voted || []).sort((a, b) => String(b.d).localeCompare(String(a.d))).slice(0, 8), votedN: s.voted?.length || 0, yes: s.voted?.length ? pct(s.voted.reduce((t, v) => t + v.y, 0), s.voted.reduce((t, v) => t + v.y + v.no, 0)) : null };
-  return { impact, fields: s.fields, sns: snsBy[m.MONA_CD] || {}, id: m.MONA_CD, name: m.HG_NM, hanja: m.HJ_NM || '', party: m.POLY_NM, area: m.ORIG_NM, type: m.ELECT_GBN_NM || '', terms: m.REELE_GBN_NM, role: m.JOB_RES_NM || '', cmits: cmitsOf(m), tel: m.TEL_NO || '', web: m.HOMEPAGE || '',
+  return { weak: s.weak ? { c: s.weak.c, q: s.weak.q.size } : null, impact, fields: s.fields, sns: snsBy[m.MONA_CD] || {}, id: m.MONA_CD, name: m.HG_NM, hanja: m.HJ_NM || '', party: m.POLY_NM, area: m.ORIG_NM, type: m.ELECT_GBN_NM || '', terms: m.REELE_GBN_NM, role: m.JOB_RES_NM || '', cmits: cmitsOf(m), tel: m.TEL_NO || '', web: m.HOMEPAGE || '',
     dBase: s.dBase || 0, dDiff: s.dDiff || 0, dissent: (s.dBase || 0) >= 100 ? pct(s.dDiff || 0, s.dBase) : null, voteTotal: total, voteRate: pct(voted, total), voteAdj: pct(s.adjVoted || 0, s.adjTotal || 0), groupBills: s.groupAbsentBills || 0, rep: s.rep, passRate: s.rep >= 5 ? pct(s.passed, s.rep) : null, passed: s.passed, focus: s.cmitBills >= 5 ? pct(s.inCmit, s.cmitBills) : null, y: s.y, n: s.n, a: s.a, x: s.x, recent: s.recent.slice(0, 10) };
 });
 // 표결 궁합: 찬반이 실제로 갈린 최근 의안을 규칙으로만 고른다(사람이 고르지 않음)
@@ -224,6 +246,7 @@ mkdirSync(OUT, { recursive: true });
 writeFileSync(`${OUT}/members.json`, JSON.stringify(members));
 writeFileSync(`${OUT}/quiz.json`, JSON.stringify(quiz));
 writeFileSync(`${OUT}/tax.json`, JSON.stringify(tax));
+writeFileSync(`${OUT}/weak.json`, JSON.stringify(Object.fromEntries(Object.entries(WEAK).map(([k, [n, re]]) => [k, { name: n, words: re.source.split('|') }]))));
 writeFileSync(`${OUT}/fields.json`, JSON.stringify(Object.fromEntries(Object.entries(FIELDS).map(([k, [n, re]]) => [k, { name: n, words: re.source.split('|') }]))));
 { const un = {}; let hit = 0; for (const b of bills) { if (fieldsOf(b.BILL_NAME || '').length) hit++; else { const n = String(b.BILL_NAME || '').split(' ')[0]; un[n] = (un[n] || 0) + 1; } }
   log(`생활 분야 분류: ${hit}/${bills.length}건 (${Math.round(hit / bills.length * 100)}%). 미분류 상위: ` + Object.entries(un).sort((a, b) => b[1] - a[1]).slice(0, 30).map(([n, c]) => `${n} ${c}`).join(', ')); }
