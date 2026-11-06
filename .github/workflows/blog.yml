@@ -1,0 +1,30 @@
+name: 블로그 수집
+on:
+  schedule:
+    - cron: '41 20 * * *'   # 매일 한국시간 오전 5시 41분
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: blog
+jobs:
+  blog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - env:
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+        run: node scripts/blog.mjs
+      - run: |
+          git config user.name "poliscope-bot"
+          git config user.email "poliscope-bot@users.noreply.github.com"
+          git add docs/data/blog.json data/blog-cache.json 2>/dev/null || exit 0
+          git diff --cached --quiet && exit 0
+          git commit -m "블로그 자료 갱신 $(date -u +%F)"
+          for i in 1 2 3 4 5; do git pull --rebase -X theirs origin main && git push && exit 0; git rebase --abort 2>/dev/null; sleep 20; done
+          exit 1
