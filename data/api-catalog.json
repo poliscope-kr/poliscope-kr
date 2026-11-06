@@ -387,8 +387,190 @@
   ]
  },
  {
+  "name": "NABO 추계 세제 이슈",
+  "service": "njnuvjckavvwaohhj",
+  "request": [
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명"
+  ],
+  "output": [
+   "REG_DATE:발간일",
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명",
+   "LINK_URL:링크 주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "NABO 대한민국 재정",
+  "service": "nxrkedghaikxodlja",
+  "request": [
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명"
+  ],
+  "output": [
+   "REG_DATE:발간일",
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명",
+   "LINK_URL:링크 주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "NABO 비용추계 및 재정전망",
+  "service": "npsofwddayuhqhfgh",
+  "request": [
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명"
+  ],
+  "output": [
+   "REG_DATE:발간일",
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명",
+   "LINK_URL:링크 주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
   "name": "NABO 결산 분석",
   "service": "negjnychalvyrcifv",
+  "request": [
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명"
+  ],
+  "output": [
+   "REG_DATE:발간일",
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명",
+   "LINK_URL:링크 주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "NABO 대한민국 지방재정",
+  "service": "naqdzohuagtisumcw",
+  "request": [
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명"
+  ],
+  "output": [
+   "REG_DATE:발간일",
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명",
+   "LINK_URL:링크 주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "NABO 경제재정수첩",
+  "service": "ncnpwqimabagvdmky",
+  "request": [
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명"
+  ],
+  "output": [
+   "REG_DATE:발간일",
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명",
+   "LINK_URL:링크 주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "NABO 재정동향 이슈",
+  "service": "nsjmwljyauxvdodgh",
+  "request": [
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명"
+  ],
+  "output": [
+   "REG_DATE:발간일",
+   "DEPARTMENT_NAME:부서명",
+   "SUBJECT:보고서명",
+   "LINK_URL:링크 주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "NABO 재정사업 평가",
+  "service": "nzjvrirbauqmffblj",
   "request": [
    "DEPARTMENT_NAME:부서명",
    "SUBJECT:보고서명"
