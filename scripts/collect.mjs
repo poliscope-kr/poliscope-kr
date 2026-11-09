@@ -86,6 +86,15 @@ const WEAK = {
 };
 const weakOf = n => Object.entries(WEAK).filter(([, [, re]]) => re.test(n)).map(([k]) => k);
 
+// 역사 관련 입법: 일제강점기·독립운동·친일 청산·강제동원 피해·역사 왜곡 대응. 법률 이름의 단어로만 나눈다. 규칙은 docs/data/history.json으로 공개한다.
+const HIST = {
+  indep: ['독립운동·독립유공자 예우', /독립유공자|독립운동|순국선열|애국지사|임시정부|3·1운동|3ㆍ1운동|삼일운동/],
+  purge: ['친일 청산·친일재산 환수', /친일|반민족/],
+  victim: ['강제동원·일본군 위안부 피해자', /강제동원|강제징용|일본군|위안부|대일항쟁|사할린/],
+  distort: ['역사 왜곡·독도 대응', /역사왜곡|역사 왜곡|독도|사도광산/],
+};
+const histOf = n => Object.entries(HIST).filter(([, [, re]]) => re.test(n)).map(([k]) => k);
+
 // 1. 의원
 log('의원 명단 받는 중');
 const rawMembers = await getAll(API.members, {}, false);
@@ -129,6 +138,20 @@ for (const b of bills) {
     s.recent.push({ n: b.BILL_NAME, d: b.PROPOSE_DT, r: b.PROC_RESULT || '계류', u: b.DETAIL_LINK || '' });
   }
 }
+// 역사 관련 법안: 대표발의와 공동발의를 따로 센다. 공동발의자는 이름으로 연결하며, 동명이인은 구분할 수 없어 뺀다.
+let histBills = 0;
+for (const b of bills) {
+  const cats = histOf(b.BILL_NAME || ''); if (!cats.length) continue; histBills++;
+  const rep = new Set(b._codes || []);
+  const co = new Set(String(b.PUBL_PROPOSER || '').split(/[,，]/).map(n => byName[n.trim()]).filter(c => c && !rep.has(c)));
+  const passed = PASS.test(b.PROC_RESULT || '');
+  for (const [code, role] of [...[...rep].map(c => [c, 'rep']), ...[...co].map(c => [c, 'co'])]) {
+    const h = stats[code].hist = stats[code].hist || { c: {}, bills: [], votes: [] };
+    for (const k of cats) { const x = h.c[k] = h.c[k] || { r: 0, p: 0, co: 0 }; if (role === 'rep') { x.r++; if (passed) x.p++; } else x.co++; }
+    h.bills.push({ n: b.BILL_NAME, d: b.PROPOSE_DT, r: b.PROC_RESULT || '계류', u: b.DETAIL_LINK || '', role, cats });
+  }
+}
+log(`역사 관련 법안 ${histBills}건`);
 if (homonymDropped) warnings.push(`동명이인을 구분하지 못한 대표발의 법안 ${homonymDropped}건은 계산에서 뺐습니다.`);
 if (unmatched) warnings.push(`대표발의자가 현직 의원이 아닌 법안 ${unmatched}건은 계산에서 뺐습니다(사직 의원, 위원장 대안 등).`);
 log('연결 안 된 대표발의자 상위: ' + Object.entries(unmatchedNames).sort((a, b) => b[1] - a[1]).slice(0, 25).map(([n, c]) => `${n || '(없음)'} ${c}`).join(', '));
@@ -164,6 +187,14 @@ for (const v of Object.values(cache)) {
     if (seated[m.POLY_NM] >= 5 && (absent[m.POLY_NM] || 0) / seated[m.POLY_NM] >= .5) { stats[c].groupAbsentBills = (stats[c].groupAbsentBills || 0) + 1; continue; }
     stats[c].adjTotal = (stats[c].adjTotal || 0) + 1; if (k !== 'x') stats[c].adjVoted = (stats[c].adjVoted || 0) + 1; } }
 
+// 역사 관련 법안의 본회의 표결: 의원마다 어떻게 표결했는지 그대로 남긴다.
+let histVotes = 0;
+for (const [id, v] of Object.entries(cache)) {
+  const cats = histOf(v.name || ''); if (!cats.length) continue; histVotes++;
+  for (const k of ['y', 'n', 'a', 'x']) for (const c of v[k]) { if (!stats[c]) continue; const h = stats[c].hist = stats[c].hist || { c: {}, bills: [], votes: [] };
+    h.votes.push({ id, n: v.name, d: v.date, v: k, u: v.url || '', Y: v.y.length, N: v.n.length, cats }); }
+}
+log(`역사 관련 본회의 표결 ${histVotes}건`);
 // 같은 당 다수와 다르게 표결한 비율. 찬성·반대만 비교하고, 그 당 표결자가 5명 이상이며 다수가 뚜렷한(70% 이상) 표결만 쓴다. 정당은 현재 소속 기준이다.
 for (const v of Object.values(cache)) {
   const cnt = {};
@@ -234,7 +265,8 @@ const members = rawMembers.map(m => {
   s.recent.sort((a, b) => String(b.d).localeCompare(String(a.d)));
   const median = a => { if (!a?.length) return null; const x = [...a].sort((p, q) => p - q); return x[Math.floor(x.length / 2)]; };
   const impact = { direct: s.direct || 0, merged: s.merged || 0, days: median(s.days), daysN: s.days?.length || 0, coBase: s.coBase || 0, coCross: s.coCross || 0, voted: (s.voted || []).sort((a, b) => String(b.d).localeCompare(String(a.d))).slice(0, 8), votedN: s.voted?.length || 0, yes: s.voted?.length ? pct(s.voted.reduce((t, v) => t + v.y, 0), s.voted.reduce((t, v) => t + v.y + v.no, 0)) : null };
-  return { weak: s.weak ? { c: s.weak.c, q: s.weak.q.size } : null, impact, fields: s.fields, sns: snsBy[m.MONA_CD] || {}, id: m.MONA_CD, name: m.HG_NM, hanja: m.HJ_NM || '', party: m.POLY_NM, area: m.ORIG_NM, type: m.ELECT_GBN_NM || '', terms: m.REELE_GBN_NM, role: m.JOB_RES_NM || '', cmits: cmitsOf(m), tel: m.TEL_NO || '', web: m.HOMEPAGE || '',
+  const hist = s.hist ? { c: s.hist.c, bills: s.hist.bills.sort((a, b) => String(b.d).localeCompare(String(a.d))).slice(0, 30), billsN: s.hist.bills.length, votes: s.hist.votes.sort((a, b) => String(b.d).localeCompare(String(a.d))) } : null;
+  return { hist, weak: s.weak ? { c: s.weak.c, q: s.weak.q.size } : null, impact, fields: s.fields, sns: snsBy[m.MONA_CD] || {}, id: m.MONA_CD, name: m.HG_NM, hanja: m.HJ_NM || '', party: m.POLY_NM, area: m.ORIG_NM, type: m.ELECT_GBN_NM || '', terms: m.REELE_GBN_NM, role: m.JOB_RES_NM || '', cmits: cmitsOf(m), tel: m.TEL_NO || '', web: m.HOMEPAGE || '',
     dBase: s.dBase || 0, dDiff: s.dDiff || 0, dissent: (s.dBase || 0) >= 100 ? pct(s.dDiff || 0, s.dBase) : null, voteTotal: total, voteRate: pct(voted, total), voteAdj: pct(s.adjVoted || 0, s.adjTotal || 0), groupBills: s.groupAbsentBills || 0, rep: s.rep, passRate: s.rep >= 5 ? pct(s.passed, s.rep) : null, passed: s.passed, focus: s.cmitBills >= 5 ? pct(s.inCmit, s.cmitBills) : null, y: s.y, n: s.n, a: s.a, x: s.x, recent: s.recent.slice(0, 10) };
 });
 // 표결 궁합: 찬반이 실제로 갈린 최근 의안을 규칙으로만 고른다(사람이 고르지 않음)
@@ -246,6 +278,7 @@ mkdirSync(OUT, { recursive: true });
 writeFileSync(`${OUT}/members.json`, JSON.stringify(members));
 writeFileSync(`${OUT}/quiz.json`, JSON.stringify(quiz));
 writeFileSync(`${OUT}/tax.json`, JSON.stringify(tax));
+writeFileSync(`${OUT}/history.json`, JSON.stringify(Object.fromEntries(Object.entries(HIST).map(([k, [n, re]]) => [k, { name: n, words: re.source.split('|') }]))));
 writeFileSync(`${OUT}/weak.json`, JSON.stringify(Object.fromEntries(Object.entries(WEAK).map(([k, [n, re]]) => [k, { name: n, words: re.source.split('|') }]))));
 writeFileSync(`${OUT}/fields.json`, JSON.stringify(Object.fromEntries(Object.entries(FIELDS).map(([k, [n, re]]) => [k, { name: n, words: re.source.split('|') }]))));
 { const un = {}; let hit = 0; for (const b of bills) { if (fieldsOf(b.BILL_NAME || '').length) hit++; else { const n = String(b.BILL_NAME || '').split(' ')[0]; un[n] = (un[n] || 0) + 1; } }
