@@ -1,5 +1,5 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>어이 뭐하노 — 국회의원 뭐 하는지 다 보인다</title><meta name="description" content="어이 뭐하노: 국회 공개 기록으로 보는 제22대 국회의원 299명의 의정활동"><meta property="og:title" content="어이 뭐하노"><meta property="og:description" content="국회 공개 기록으로 보는 제22대 국회의원 299명의 의정활동"><meta property="og:type" content="website">
+<title>의정 나침반 — 공개 기록으로 보는 국회와 국정</title><meta name="description" content="의정 나침반: 국회 공개 기록으로 보는 제22대 국회의원 299명의 의정활동과 정부 국정 운영 현황"><meta property="og:title" content="의정 나침반"><meta property="og:description" content="국회 공개 기록으로 보는 제22대 국회의원 의정활동과 정부 국정 운영 현황"><meta property="og:type" content="website">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>
 :root{--bg:#f1f3fb;--surface:#fff;--fg:#11152e;--muted:#5a6181;--line:#e0e3f0;--ac:#e8432d;--ac-soft:#ffe6e1;--hi:#c77800;--hi-soft:#fff3d6;--bad:#c62f2f;--ink:#12173d;--ink2:#1d2463;--yel:#ffcf3f;--teal:#0f9f88;--teal-soft:#d9f5ef;--vio:#5b4ee0;--vio-soft:#e9e6ff;--sky:#1f7ae0;--sky-soft:#e1efff;--shadow:0 1px 2px rgba(17,21,46,.06),0 6px 18px rgba(17,21,46,.07);--font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;--disp:"Black Han Sans","Noto Sans KR","Apple SD Gothic Neo",sans-serif}
@@ -44,7 +44,7 @@ ol.rank li{grid-template-columns:34px minmax(0,1fr) auto}
 .hgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}@media (max-width:560px){.hgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}.hgrid div{background:var(--bg);border-radius:10px;padding:8px 10px}.hgrid b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.hgrid span{font-size:12px;color:var(--muted)}
 .vrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}.vtag{font-weight:700;font-size:13px;border-radius:6px;padding:1px 8px}.vt-y{background:var(--ac-soft);color:var(--ac)}.vt-n{background:var(--hi-soft);color:var(--hi)}.vt-a,.vt-x{background:var(--line);color:var(--muted)}
 .famcard{border:2px solid var(--hi);background:var(--hi-soft);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}.famcard h3{margin:0;font-size:15px;color:var(--hi)}
-/* ---- 어이 뭐하노 디자인 ---- */
+/* ---- 의정 나침반 디자인 ---- */
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:12px max(16px,env(safe-area-inset-left,0px)) 10px;background:linear-gradient(120deg,var(--ink) 0%,var(--ink2) 100%);box-shadow:0 6px 20px rgba(10,14,40,.25)}
 .logo{font-family:var(--disp);font-weight:400;font-size:24px;color:#fff;letter-spacing:.01em}.logo em{font-style:normal;color:var(--yel)}
 nav{gap:4px}nav a{color:#c9cdf5;font-size:13.5px;padding:5px 10px;border-radius:999px}nav a:hover{color:#fff;background:rgba(255,255,255,.08)}nav a.on{background:var(--ac);color:#fff;box-shadow:0 2px 10px rgba(232,67,45,.45)}
@@ -84,7 +84,7 @@ button.hb{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-
 [hidden]{display:none!important}
 .pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:1px 9px}
 footer{margin-top:30px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
-</style></head><body><div class="wrap"><header><a class="logo" href="#home">어이 <em>뭐하노</em></a><nav id="nav"></nav></header><main id="m"><p class="muted">자료를 불러오는 중입니다.</p></main><footer id="f"></footer></div>
+</style></head><body><div class="wrap"><header><a class="logo" href="#home">의정 <em>나침반</em></a><nav id="nav"></nav></header><main id="m"><p class="muted">자료를 불러오는 중입니다.</p></main><footer id="f"></footer></div>
 <script>
 (()=>{
 const $=id=>document.getElementById(id);
@@ -106,7 +106,7 @@ function home(){
  const pick=['minsaeng','result','attend'].map(k=>BOARDS.find(b=>b.k===k));
  const my=M.find(m=>m.id===myId());
  const vote=Q.slice(0,3);
- show(h('section',{class:'hero'},h('span',{class:'kick'},'제22대 국회 · 매일 아침 갱신'),h('h1',null,'어이, ',h('mark',null,'뭐하노'),'?'),h('p',null,'우리 지역구 의원이 국회에서 뭘 했는지, 표결·법안·유튜브·언론 기록으로 다 보인다.'),inp,h('div',{class:'hstats'},h('div',null,h('b',null,fmt(M.length)),h('span',null,'현직 의원')),h('div',null,h('b',null,fmt(META?.bills)),h('span',null,'의원 발의 법안')),h('div',null,h('b',null,fmt(META?.voteBills)),h('span',null,'본회의 표결')))),list,h('div',{class:'sec',style:'margin:12px 0'},h('p',{style:'margin:0'},'이 자료는 공개된 객관적인 자료를 모아 국민들이 쉽게 이해할 수 있도록 표현한 것이며, ',h('b',null,'최종 판단은 보시는 분이 하시는 것입니다.')),h('p',{class:'small muted',style:'margin:0'},'어느 정당이나 의원도 지지하거나 반대하지 않고, 모든 의원에게 같은 기준을 적용합니다. 점수는 공개한 기준으로 계산한 참고값입니다. ',h('a',{href:'#about'},'자료와 기준 보기'))),
+ show(h('section',{class:'hero'},h('span',{class:'kick'},'제22대 국회 · 매일 아침 갱신'),h('h1',null,'우리 의원의 ',h('mark',null,'의정활동'),'을 한눈에'),h('p',null,'지역구나 이름으로 찾아보세요. 본회의 표결, 법안 발의, 유튜브, 언론 보도 등 공개 기록으로 의정활동을 확인할 수 있습니다.'),inp,h('div',{class:'hstats'},h('div',null,h('b',null,fmt(M.length)),h('span',null,'현직 의원')),h('div',null,h('b',null,fmt(META?.bills)),h('span',null,'의원 발의 법안')),h('div',null,h('b',null,fmt(META?.voteBills)),h('span',null,'본회의 표결')))),list,h('div',{class:'sec',style:'margin:12px 0'},h('p',{style:'margin:0'},'이 자료는 공개된 객관적인 자료를 모아 국민들이 쉽게 이해할 수 있도록 표현한 것이며, ',h('b',null,'최종 판단은 보시는 분이 하시는 것입니다.')),h('p',{class:'small muted',style:'margin:0'},'어느 정당이나 의원도 지지하거나 반대하지 않고, 모든 의원에게 같은 기준을 적용합니다. 점수는 공개한 기준으로 계산한 참고값입니다. ',h('a',{href:'#about'},'자료와 기준 보기'))),
   my?(()=>{const lv=LAWS[0],v=lv&&(lv.y.includes(my.id)?'찬성':lv.n.includes(my.id)?'반대':lv.a.includes(my.id)?'기권':lv.x.includes(my.id)?'불참':'기록 없음');const s=index().score[my.id];return h('a',{class:'card',href:'#m/'+my.id,style:'margin-top:14px'},h('div',{class:'small muted'},'우리 의원'),h('b',null,my.name+' · '+my.area),h('div',{class:'small'},`활동지수 ${s==null?'–':s.toFixed(1)} · 대표발의 ${fmt(my.rep)}건`),my.recent[0]?h('div',{class:'small muted'},'최근 발의: '+my.recent[0].n):null,lv?h('div',{class:'small muted'},'최근 표결: '+lv.name+' → '+v):null)})():null,
   TD?[h('div',{class:'hrow'},h('h2',null,'오늘의 국회 사건 사건'),h('a',{class:'small',href:'#today'},'전체 보기')),['case','bill','fight'].map(k=>(TD.groups[k]||[])[0]).filter(Boolean).map(tdCard),h('p',{class:'small muted'},'언론 보도 제목이며, 사실 여부를 판단하지 않습니다.')]:null,
   h('div',{class:'hrow'},h('h2',null,'오늘의 국회 랭킹'),h('a',{class:'small',href:'#ranking'},'전체 보기')),
