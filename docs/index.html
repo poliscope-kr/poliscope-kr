@@ -238,6 +238,7 @@ function blogSection(m){const b=BLOG[m.id];if(!b)return null;const tp=Object.ent
 function igSection(m){const x=IG.members?.[m.id];if(!x||!x.u||x.none)return null;const has=x.n!=null;
  const bills=m.fields||{},t=x.topics||{},rows=Object.entries(FIELDS).map(([k,f])=>[f.name,t[k]||0,bills[k]?.r||0]).filter(r=>r[1]||r[2]).sort((a,b)=>b[1]+b[2]-a[1]-a[2]).slice(0,6),ti=Math.max(1,...rows.map(r=>r[1])),tb=Math.max(1,...rows.map(r=>r[2])),bar=(n,mx,c)=>h('div',{class:'votebar thin','aria-hidden':'true'},h('i',{class:c,style:`width:${n/mx*100}%`}));
  const pct=has&&x.n?Math.round(x.work/x.n*100):null;
+ if(!has)return[h('h2',null,'인스타그램에 올린 의정활동'),h('div',{class:'sec'},h('p',{class:'small',style:'margin:0'},`@${x.u} · 최근 30일 게시 ${x.p30>=30?'30건 이상':x.p30+'건'}`),h('p',{class:'small muted',style:'margin:0'},'게시물 내용 분석(의정활동 관련 비율, 다룬 분야와 발의 분야 비교)은 다음 자동 수집 때 채워집니다.'))];
  return[h('h2',null,'인스타그램에 올린 의정활동'),h('div',{class:'sec'},
   h('div',{class:'kpis'},h('div',{class:'kpi',style:'--c:var(--ac)'},h('b',null,has?fmt(x.work30):'–'),h('span',null,'최근 30일 의정 관련 게시')),h('div',{class:'kpi',style:'--c:var(--vio)'},h('b',null,pct==null?'–':pct+'%'),h('span',null,`최근 게시물 ${has?x.n:'–'}개 중 의정 관련 비율`)),h('div',{class:'kpi',style:'--c:var(--sky)'},h('b',null,x.p30>=30?'30+':fmt(x.p30)),h('span',null,'최근 30일 전체 게시'))),
   has&&x.n?h('div',{class:'stack',role:'img','aria-label':`의정 관련 ${x.work}개, 그 밖의 게시물 ${x.n-x.work}개`},h('i',{style:`width:${x.work/x.n*100}%;background:var(--ac)`}),h('i',{style:`width:${(x.n-x.work)/x.n*100}%;background:var(--line)`})):null,
