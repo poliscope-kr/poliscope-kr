@@ -4,7 +4,7 @@
 // 없으면 국회 공개 SNS 주소(페이스북·블로그·유튜브)의 아이디를 후보로 조회해 계정 이름·소개에 의원 이름이 있을 때만 '자동 확인'으로 받아들인다.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 const TOKEN = process.env.IG_TOKEN, ME = process.env.IG_USER_ID, OUT = process.env.OUT_DIR || 'docs/data';
-const GRAPH = process.env.IG_GRAPH || 'https://graph.facebook.com/v21.0';
+const GRAPH = process.env.IG_GRAPH || 'https://graph.facebook.com/v27.0';
 const MAX_CALLS = Number(process.env.IG_MAX_CALLS ?? 170), GAP = Number(process.env.IG_GAP_MS ?? 19000); // 시간당 200회 한도 아래로
 if (!TOKEN || !ME) { console.log('IG_TOKEN 또는 IG_USER_ID가 없어 건너뜁니다.'); process.exit(0); }
 const wait = ms => new Promise(r => setTimeout(r, ms));

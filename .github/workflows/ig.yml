@@ -19,7 +19,7 @@ jobs:
       - name: 수집
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID || '17841472547846514' }}
         run: node scripts/ig.mjs
       - name: 저장
         run: |
