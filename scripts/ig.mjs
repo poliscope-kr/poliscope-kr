@@ -11,6 +11,9 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 const load = (p, d) => { try { return existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : d; } catch { return d; } };
 
 const M = load(`${OUT}/members.json`, []);
+const FIELDS = load(`${OUT}/fields.json`, {});
+// 의정활동 관련 게시물: 글에 아래 단어가 있으면 센다(이름만 보고 세는 것이라 빠지거나 잘못 들어갈 수 있음)
+const WORK = /법안|법률|발의|개정안|입법|본회의|상임위|국정감사|국감|예산|질의|대정부질문|청문회|토론회|간담회|의정/;
 const manual = load(`${OUT}/ig-accounts.json`, { accounts: {} }).accounts || {};   // { 의원ID: 'username' 또는 null(계정 없음 확인) }
 const prev = load(`${OUT}/instagram.json`, { members: {}, tried: {} });
 const data = { members: prev.members || {}, tried: prev.tried || {} };
@@ -20,7 +23,7 @@ async function bd(username, withMedia) {
   if (calls >= MAX_CALLS) return { stop: true };
   if (calls) await wait(GAP);
   calls++;
-  const f = 'username,name,biography,website,followers_count,media_count' + (withMedia ? ',media.limit(30){timestamp,like_count,comments_count,media_product_type,permalink}' : '');
+  const f = 'username,name,biography,website,followers_count,media_count' + (withMedia ? ',media.limit(30){timestamp,caption,like_count,comments_count,media_product_type,permalink}' : '');
   const url = `${GRAPH}/${ME}?` + new URLSearchParams({ fields: `business_discovery.username(${username}){${f}}`, access_token: TOKEN });
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(30000) }); const j = await r.json();
@@ -41,7 +44,11 @@ const nameOk = (m, a) => { const t = `${a.name || ''} ${a.biography || ''}`; ret
 function stats(m, a, src) {
   const media = a.media?.data || [], now = Date.now(), d30 = media.filter(x => now - Date.parse(x.timestamp) <= 30 * 864e5);
   const avg = (arr, k) => arr.length ? Math.round(arr.reduce((s, x) => s + (x[k] || 0), 0) / arr.length) : null;
-  data.members[m.id] = { u: a.username, f: a.followers_count ?? null, mc: a.media_count ?? null, p30: d30.length, reels30: d30.filter(x => x.media_product_type === 'REELS').length,
+  const cap = x => String(x.caption || '');
+  const work = media.filter(x => WORK.test(cap(x))), topics = {};
+  for (const x of media) for (const [k, f] of Object.entries(FIELDS)) if ((f.words || []).some(w => cap(x).includes(w))) topics[k] = (topics[k] || 0) + 1;
+  data.members[m.id] = { n: media.length, work: work.length, work30: d30.filter(x => WORK.test(cap(x))).length, topics,
+    workRecent: work.slice(0, 3).map(x => ({ d: x.timestamp?.slice(0, 10), s: cap(x).replace(/\s+/g, ' ').slice(0, 50), u: x.permalink || '' })), u: a.username, f: a.followers_count ?? null, mc: a.media_count ?? null, p30: d30.length, reels30: d30.filter(x => x.media_product_type === 'REELS').length,
     likes: avg(media.slice(0, 12), 'like_count'), cmts: avg(media.slice(0, 12), 'comments_count'), last: media[0]?.timestamp?.slice(0, 10) || '', src, at: new Date().toISOString().slice(0, 10),
     recent: media.slice(0, 3).map(x => ({ d: x.timestamp?.slice(0, 10), l: x.like_count ?? null, c: x.comments_count ?? null, u: x.permalink || '' })) };
 }
