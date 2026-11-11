@@ -3,6 +3,7 @@
 // 계정 찾기: docs/data/ig-accounts.json에 사람이 확인한 아이디가 있으면 그것을 쓰고,
 // 없으면 국회 공개 SNS 주소(페이스북·블로그·유튜브)의 아이디를 후보로 조회해 계정 이름·소개에 의원 이름이 있을 때만 '자동 확인'으로 받아들인다.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { makeCats } from './cats.mjs';
 const TOKEN = String(process.env.IG_TOKEN || '').trim().replace(/^["'“”]+|["'“”,]+$/g, ''), ME = process.env.IG_USER_ID, OUT = process.env.OUT_DIR || 'docs/data';
 const GRAPH = process.env.IG_GRAPH || 'https://graph.facebook.com/v27.0';
 const MAX_CALLS = Number(process.env.IG_MAX_CALLS ?? 170), GAP = Number(process.env.IG_GAP_MS ?? 19000); // 시간당 200회 한도 아래로
@@ -42,14 +43,7 @@ const handleOf = u => { try { const x = new URL(u); const seg = x.pathname.split
 const nameOk = (m, a) => { const t = `${a.name || ''} ${a.biography || ''}`; return t.includes(m.name) || (m.hanja && t.includes(m.hanja)); };
 
 // 게시물 분류(글에 든 단어 기준, 한 게시물이 여러 분류에 들 수 있음). 같은 규칙을 모든 의원·대통령에게 똑같이 쓴다.
-const LIFEW = [...new Set(Object.values(FIELDS).flatMap(f => f.words || []))];
-const CATS = {
-  work: { name: '입법·의정활동', re: WORK },
-  life: { name: '민생·정책', re: new RegExp([...LIFEW, '민생', '물가', '일자리', '주거', '전세', '복지', '소상공인', '자영업', '청년', '어르신', '아동', '돌봄', '피해 지원', '대책', '지원금', '생활'].map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')) },
-  local: { name: '지역 활동', re: /지역구|지역 주민|주민|현장 방문|현장|민원|동네|우리 지역/ },
-  fight: { name: '정치 공방·비판', re: /규탄|비판|심판|탄핵|특검|독재|내란|정권|사퇴|거짓|망언|막말|방탄|공세|무능|폭주|국정조사|정치 보복/ },
-  party: { name: '선거·당무', re: /선거|(?<!선수 )후보(?!선수|생)|공천|경선|당대표|최고위원|전당대회|(?<!담)당원|유세|총선|대선(?![수배박])|지방선거/ },
-};
+const CATS = makeCats(FIELDS);
 export const CAT_RULES = Object.fromEntries(Object.entries(CATS).map(([k, v]) => [k, { name: v.name, words: String(v.re.source).split('|').slice(0, 40) }]));
 function analyze(a, src, localWords = []) {
   const media = a.media?.data || [], now = Date.now(), d30 = media.filter(x => now - Date.parse(x.timestamp) <= 30 * 864e5);

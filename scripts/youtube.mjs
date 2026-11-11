@@ -1,6 +1,7 @@
 // 국회 공개 자료의 유튜브 주소로 의원별 최근 1년 영상 활동을 받는다. 조회수·좋아요는 받지 않는다.
 // 실행: YOUTUBE_API_KEY=키 node scripts/youtube.mjs
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { makeCats, catsOfText } from './cats.mjs';
 const KEY = process.env.YOUTUBE_API_KEY;
 const BASE = process.env.YT_BASE || 'https://www.googleapis.com/youtube/v3';
 const OUT = process.env.OUT_DIR || 'docs/data';
@@ -80,6 +81,32 @@ if (quota) for (const id of Object.keys(prev)) if (!out[id]) out[id] = prev[id];
 const byCh = {}; for (const [id, o] of Object.entries(out)) { const c = channels[o.url]?.id; if (c) (byCh[c] = byCh[c] || []).push(id); }
 const shared = Object.values(byCh).filter(a => a.length > 1).flat();
 for (const id of shared) { unresolved.push(members.find(m => m.id === id).name); delete out[id]; }
+// 대통령 채널: 지정한 영상(쇼츠)의 채널을 찾아 같은 방식으로 센다. 제목은 인스타그램과 같은 분류 규칙으로 나눈다.
+let president = JSON.parse(existsSync(`${OUT}/youtube.json`) ? readFileSync(`${OUT}/youtube.json`, 'utf8') : '{}').president || null;
+const PRES_VIDEO = (existsSync(`${OUT}/ig-accounts.json`) ? JSON.parse(readFileSync(`${OUT}/ig-accounts.json`, 'utf8')).presidentYoutubeVideo : null) || process.env.YT_PRES_VIDEO;
+if (PRES_VIDEO && !quota) {
+  try {
+    let ch = channels['video:' + PRES_VIDEO];
+    if (!ch) { const v = await api('videos', { part: 'snippet', id: PRES_VIDEO }); const cid = v.items?.[0]?.snippet?.channelId; if (cid) { ch = await resolve({ id: cid }); if (ch) channels['video:' + PRES_VIDEO] = ch; } }
+    if (ch?.uploads) {
+      const vids = []; let tok, done = false;
+      while (!done) {
+        const j = await api('playlistItems', { part: 'contentDetails,snippet', playlistId: ch.uploads, maxResults: 50, ...(tok ? { pageToken: tok } : {}) });
+        const fresh = (j.items || []).filter(i => Date.parse(i.contentDetails?.videoPublishedAt || i.snippet?.publishedAt) >= SINCE);
+        if (fresh.length) { const d = await api('videos', { part: 'contentDetails', id: fresh.map(i => i.contentDetails.videoId).join(','), maxResults: 50 }); const len = Object.fromEntries((d.items || []).map(v => [v.id, secs(v.contentDetails?.duration)])); for (const i of fresh) vids.push({ id: i.contentDetails.videoId, t: i.snippet?.title || '', at: i.contentDetails?.videoPublishedAt || i.snippet?.publishedAt, s: len[i.contentDetails.videoId] ?? null }); }
+        tok = j.nextPageToken; done = !tok || fresh.length < (j.items || []).length || vids.length >= 600;
+      }
+      const FW = existsSync(`${OUT}/fields.json`) ? JSON.parse(readFileSync(`${OUT}/fields.json`, 'utf8')) : {}, CATS = makeCats(FW);
+      const months = {}, cats = {}, ex = {}, topics = {}; let longs = 0, shorts = 0;
+      for (const v of vids) { const k = String(v.at).slice(0, 7); months[k] = months[k] || { l: 0, s: 0 }; if (v.s != null && v.s <= 180) { months[k].s++; shorts++; } else { months[k].l++; longs++; }
+        const c = catsOfText(CATS, v.t); (c.length ? c : ['etc']).forEach(x => { cats[x] = (cats[x] || 0) + 1; if (!ex[x]) ex[x] = { d: String(v.at).slice(0, 10), s: v.t.slice(0, 60), u: 'https://www.youtube.com/watch?v=' + v.id }; });
+        for (const [k2, re] of FIELDS) if (re.test(v.t)) topics[k2] = (topics[k2] || 0) + 1; }
+      president = { title: ch.title, channel: ch.id, total: vids.length, longs, shorts, months, cats, ex, topics, activeMonths: Math.min(12, Object.keys(months).length), at: new Date().toISOString().slice(0, 10),
+        recent: vids.sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 5).map(v => ({ t: v.t, id: v.id, d: String(v.at).slice(0, 10), short: v.s != null && v.s <= 180 })) };
+      console.log(`대통령 유튜브: ${ch.title} 최근 1년 영상 ${vids.length}개`);
+    } else console.log('대통령 유튜브 채널을 찾지 못했습니다.');
+  } catch (e) { if (e instanceof QuotaError) quota = true; console.log('대통령 유튜브 실패: ' + e.message); }
+}
 writeFileSync(CACHE, JSON.stringify(channels));
-writeFileSync(`${OUT}/youtube.json`, JSON.stringify({ updated: new Date().toISOString(), resolved: Object.keys(out).length, unresolved, failed, quota, members: out }));
+writeFileSync(`${OUT}/youtube.json`, JSON.stringify({ updated: new Date().toISOString(), resolved: Object.keys(out).length, unresolved, failed, quota, president, members: out }));
 console.log(`유튜브 완료: ${Object.keys(out).length}명, 채널 못 찾음 ${unresolved.length}명 (${unresolved.slice(0, 20).join(', ')}), 실패 ${failed}, 사용 ${units}단위`);
