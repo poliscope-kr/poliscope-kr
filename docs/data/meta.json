@@ -1,10 +1,15 @@
 {
- "updated": "2026-11-11T12:19:10.341Z",
+ "updated": "2026-11-11T12:59:37.517Z",
  "age": "22",
  "members": 299,
  "bills": 20659,
  "voteBills": 1913,
  "voteBillsTotal": 1913,
+ "consensus": {
+  "total": 1913,
+  "wide": 1885,
+  "split": 116
+ },
  "incomplete": false,
  "warnings": [
   "대표발의자가 현직 의원이 아닌 법안 1061건은 계산에서 뺐습니다(사직 의원, 위원장 대안 등)."
