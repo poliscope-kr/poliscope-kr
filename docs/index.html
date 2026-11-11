@@ -99,6 +99,7 @@ button.hb{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-
 .board{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.bcell{position:relative;min-height:74px;padding:8px 6px;border-radius:14px;background:var(--bg);border:2px dashed var(--line);display:flex;flex-direction:column;gap:2px;font-size:12px;line-height:1.25}.bcell b{font-size:12.5px}.bcell .bn{color:var(--muted);font-size:11px}.bcell.past{background:color-mix(in srgb,var(--teal) 22%,var(--bg));border-style:solid;border-color:transparent}.bcell.now{background:var(--hi-soft);border:2px solid var(--hi)}.bcell.stop{background:var(--ac-soft);border-color:var(--bad)}.token{position:absolute;right:4px;bottom:2px;font-size:24px}
 .favc{display:flex;flex-direction:column;gap:4px}.favc .row{align-items:center;gap:6px}.favc .nb{background:var(--ac);color:#fff;border-radius:10px;padding:0 8px;font-size:12px;font-weight:900}
 .streak{display:flex;gap:12px;align-items:center;padding:12px 14px;margin:10px 0;border-radius:16px;background:var(--hi-soft)}.sfire{font-size:34px}
+.polhead{display:flex;gap:14px;align-items:center}.ring2.big{width:96px;height:96px}.ring2.big span{width:72px;height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center}.ring2.big b{font-family:var(--disp);font-weight:400;font-size:30px;line-height:1}.ring2.big small{font-size:10px;color:var(--muted)}.callout{padding:10px 12px;border-radius:12px;background:var(--ac-soft);font-size:14px;line-height:1.55}
 .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}.mgrid .card{margin:0}.ghead{margin:18px 0 8px;display:flex;gap:6px;align-items:baseline}.frow{display:flex;gap:8px;flex-wrap:wrap}.frow input{flex:1;min-width:0}.fsel{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:16px var(--font)}.allbtn{display:block;margin:12px 0 4px;padding:13px 16px;border-radius:14px;background:var(--ac);color:#fff!important;font-weight:800;text-align:center;text-decoration:none}.hstats a.hlink{color:inherit;text-decoration:none;display:block;background:rgba(255,255,255,.1);border-radius:12px;padding:8px 10px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
 .split{background:var(--ac)}.split i{background:var(--teal)}
@@ -654,12 +655,51 @@ function analystBox(m){const a=analyze_(m),s=index().score[m.id],r=rankOf(m.id,M
   a.trend.length?h('div',null,h('div',{class:'small',style:'color:var(--sky);font-weight:800'},'📈 최근 흐름'),a.trend.map(t=>h('div',{class:'small'},'· '+t))):null,
   a.flags.length?h('div',null,h('div',{class:'small muted',style:'font-weight:800'},'ℹ️ 함께 볼 사정'),a.flags.map(t=>h('div',{class:'small muted'},'· '+t))):null,
   h('p',{class:'small muted',style:'margin:0'},'공개 지표를 같은 규칙으로 정리한 자동 분석입니다. 의원의 자질이나 동기는 판정하지 않습니다. ',h('a',{href:'#analyst'},'분석관 전체 보기')))]}
+// ---- AI 분석관: 지금의 대한민국 정치는 ----
+// 외부 조사 수치(출처·조사 시기 고정)와 이 사이트가 매일 계산하는 공개 지표를 같은 무게로 평균한다.
+const POL_EXT={trustAssembly:{v:2.2,max:4,src:'한국행정연구원 「2025 사회통합실태조사」(2025년 8~9월, 8,300여 명, 면접조사)',u:'https://www.hankyung.com/article/2026071601771'},
+ satisfaction:{v:5.5,max:10,src:'같은 조사 · 정치 만족도',u:'https://www.hankyung.com/article/2026071601771'},
+ vdem:{v:73.9,rank:'179개국 중 22위',src:'V-Dem 자유민주주의 지수 2025 (Model Diplomat 정리)',u:'https://modeldiplomat.com/politics/democracy-index/2025'},
+ wish:{src:'미디어토마토 제179차 정기 여론조사(뉴스토마토 의뢰, 2025년 12월 29~30일, 1,033명, ARS, 응답률 1.7%, ±3.0%p)',u:'https://newstomato.com/ReadNews.aspx?no=1286533',rows:[['민생 안정·경제 성장',47.9],['개혁을 통한 기득권 해체',18.3],['여야 협치·국민 통합',17.2],['외교 및 한반도 평화',7.6],['개헌(권력구조·선거제)',5.8]]},
+ conflict:{src:'한국행정연구원 「2025 사회통합실태조사」 · 갈등이 심하다고 느끼는 정도(4점 만점)',u:'https://www.heraldk.com/article/2026070618184444576',rows:[['이념(보수·진보)',3.2],['계층(빈부)',2.9],['노사',2.8],['세대',2.7],['남녀',2.6]]},
+ gallup:{src:'한국갤럽(2026년 2월 10~12일, 1,003명, 전화면접, 응답률 13.3%, ±3.1%p) · 대통령 직무 평가 이유',u:'https://m.seoul.co.kr/news/2026/02/13/20260213500156',pos:16,neg:15}};
+function politicsBox(){const box=h('div');(async()=>{const D=await lifeData();const b=D.base||{},T=D.total||0;
+ const sum=k=>M.reduce((t,m)=>t+(m.impact?.[k]||0),0),avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+ const igAll=Object.values(IG.members||{}).filter(x=>x.posts),posts=igAll.flatMap(x=>x.posts),lifeShare=posts.length?posts.filter(p=>p.c.includes('life')||p.c.includes('work')).length/posts.length*100:null,fightShare=posts.length?posts.filter(p=>p.c.includes('fight')).length/posts.length*100:null;
+ const cs=META?.consensus;
+ const ind=[
+  ['국민의 국회 신뢰',(POL_EXT.trustAssembly.v-1)/3*100,`4점 만점 ${POL_EXT.trustAssembly.v}점`,POL_EXT.trustAssembly],
+  ['국민의 정치 만족',POL_EXT.satisfaction.v*10,`10점 만점 ${POL_EXT.satisfaction.v}점`,POL_EXT.satisfaction],
+  ['민주주의 수준',POL_EXT.vdem.v,`100점 만점 ${POL_EXT.vdem.v}점 · ${POL_EXT.vdem.rank}`,POL_EXT.vdem],
+  ['본회의 넓은 합의',cs?.total?cs.wide/cs.total*100:null,cs?.total?`표결 ${fmt(cs.total)}건 중 ${fmt(cs.wide)}건이 찬성 3분의 2 이상`:'다음 수집 때 계산',{src:'열린국회정보 본회의 표결(이 사이트 계산)'}],
+  ['다른 정당과 함께 낸 법안',sum('coBase')?sum('coCross')/sum('coBase')*100:null,`공동발의 법안 ${fmt(sum('coBase'))}건 중 ${fmt(sum('coCross'))}건`,{src:'열린국회정보 의안정보(이 사이트 계산)'}],
+  ['법안 처리율',T?((b.passed||0)+(b.merged||0))/T*100:null,T?`법률안 ${fmt(T)}건 중 통과·대안 반영 ${fmt((b.passed||0)+(b.merged||0))}건`:'',{src:'열린국회정보 의안정보(이 사이트 계산)'}],
+  ['본회의 표결 참여',avg(M.map(m=>m.voteAdj).filter(v=>v!=null)),'의원 평균(정당 차원 집단 불참 제외)',{src:'열린국회정보 본회의 표결(이 사이트 계산)'}],
+  ['민생·의정 중심 소통',lifeShare,posts.length?`의원 ${igAll.length}명 인스타 게시물 ${fmt(posts.length)}개 중 민생·정책 또는 입법·의정 관련 비율`:'인스타 분석 뒤 계산',{src:'메타 공식 API(이 사이트 계산)'}]].filter(x=>x[1]!=null);
+ const score=Math.round(ind.reduce((t,x)=>t+x[1],0)/ind.length),col=v=>v>=70?'var(--teal)':v>=50?'var(--sky)':v>=35?'var(--hi)':'var(--bad)';
+ box.append(
+  h('div',{class:'polhead'},h('div',{class:'ring2 big',style:`--p:${score}`},h('span',null,h('b',null,score),h('small',null,'/100'))),h('div',null,h('div',{class:'small muted'},'공개 지표로 본 대한민국 정치 종합 점수'),h('b',{style:'font-size:20px'},`${ind.length}개 지표 평균 ${score}점`),h('div',{class:'small muted'},'각 지표를 0~100으로 바꿔 같은 무게로 평균했습니다. 특정 정당·정부에 대한 평가가 아닙니다.'))),
+  h('div',{class:'hbars'},ind.map(([l,v,raw,s])=>{const r=hbar(l,Math.round(v),100,col(v));r.title=raw+' · '+s.src;return r})),
+  h('details',null,h('summary',{class:'small'},'지표별 근거와 출처 보기'),ind.map(([l,v,raw,s])=>h('div',{class:'small',style:'margin:4px 0'},h('b',null,`${l} ${Math.round(v)}점`),` — ${raw}. `,s.u?h('a',{href:s.u,target:'_blank',rel:'noopener'},s.src):h('span',{class:'muted'},s.src)))),
+  h('p',{class:'small muted',style:'margin:0'},'점수 바꾸는 법: 4점·10점 척도는 0~100으로 그대로 늘렸고(4점 척도는 1점=0, 4점=100), 비율은 % 그대로 썼습니다. 지표 선택과 같은 무게는 이 사이트가 정한 것이며, 다른 기준이면 점수가 달라질 수 있습니다.'));
+ // 국민이 바라는 정치
+ const W=POL_EXT.wish,C=POL_EXT.conflict,G=POL_EXT.gallup;
+ box.append(h('h3',{style:'margin:14px 0 4px'},'국민이 바라는 정치'),
+  h('b',null,'2026년 정부·정치가 가장 먼저 해야 할 일'),h('div',{class:'hbars'},W.rows.map(([l,v],i)=>hbar(l,v,100,i?'var(--muted)':'var(--ac)'))),h('p',{class:'small muted',style:'margin:0'},h('a',{href:W.u,target:'_blank',rel:'noopener'},W.src)),
+  h('div',{class:'callout'},h('b',null,'민생 안정·경제 성장'),`이 47.9%로 다른 과제를 모두 합친 것(48.9%)과 비슷합니다. 한국갤럽 조사에서도 대통령을 좋게 보는 이유 1위(${G.pos}%)와 나쁘게 보는 이유 공동 1위(${G.neg}%)가 모두 ‘경제·민생’이었습니다. 지지 여부와 관계없이 국민이 정치를 평가하는 첫 번째 기준이 민생 경제라는 뜻입니다.`),h('p',{class:'small muted',style:'margin:0'},h('a',{href:G.u,target:'_blank',rel:'noopener'},G.src)),
+  h('b',null,'국민이 느끼는 갈등의 크기 (4점 만점)'),h('div',{class:'hbars'},C.rows.map(([l,v],i)=>hbar(l,v,4,i?'var(--muted)':'var(--bad)'))),h('p',{class:'small muted',style:'margin:0'},'이념 갈등이 가장 심하다고 느끼고 있습니다. ',h('a',{href:C.u,target:'_blank',rel:'noopener'},C.src)),
+  h('h3',{style:'margin:14px 0 4px'},'국회는 민생에 얼마나 집중하고 있나'),
+  h('div',{class:'kpis'},lifeShare!=null?h('div',{class:'kpi',style:'--c:var(--teal)'},h('b',null,Math.round(lifeShare)+'%'),h('span',null,'의원 SNS 중 민생·의정 이야기')):null,fightShare!=null?h('div',{class:'kpi',style:'--c:var(--bad)'},h('b',null,Math.round(fightShare)+'%'),h('span',null,'의원 SNS 중 정치 공방·비판')):null,cs?.total?h('div',{class:'kpi',style:'--c:var(--sky)'},h('b',null,Math.round(cs.wide/cs.total*100)+'%'),h('span',null,'본회의 표결 중 넓은 합의')):null,h('div',{class:'kpi',style:'--c:var(--vio)'},h('b',null,T?Math.round(((b.passed||0)+(b.merged||0))/T*100)+'%':'–'),h('span',null,'법률안 처리율'))),
+  h('p',{class:'small muted',style:'margin:0'},'SNS 비율은 인스타그램 계정이 확인된 의원만 대상이며, 글에 든 단어로 나눈 값입니다(한 게시물이 여러 분류에 들 수 있음). 아래 링크에서 민생 법안과 정부 정책 진행을 자세히 볼 수 있습니다.'),
+  h('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},h('a',{class:'fchip',href:'#mylaw'},'이 법, 나랑 무슨 상관?'),h('a',{class:'fchip',href:'#pres'},'대통령 국정 운영 현황'),h('a',{class:'fchip',href:'#ranking/weak'},'약자 곁의 국회의원'),h('a',{class:'fchip',href:'#net'},'여야 협치 지도')))})();return box}
+
 function analyst(){const S=index().score,scored=M.filter(m=>S[m.id]!=null).sort((a,b)=>S[b.id]-S[a.id]);
  const reasons=m=>{const a=analyze_(m);return a.good.slice(0,3).join(' · ')||'여러 지표가 고르게 높음'};
  const rising=M.filter(m=>m.b90!=null&&(m.b90||0)>=3).map(m=>({m,d:(m.b90||0)-(m.b180||0),dv:m.v90!=null&&m.v180!=null?m.v90-m.v180:0})).filter(x=>x.d>0).sort((a,b)=>b.d-a.d||b.dv-a.dv).slice(0,10);
  const rookies=scored.filter(m=>m.terms==='초선').slice(0,5),low=scored.slice(-10).reverse();
  const row=(m,extra,i)=>h('a',{class:'card',href:'#m/'+m.id},h('div',{class:'row'},h('span',{class:'name'},(i!=null?(i+1)+'. ':'')+m.name,h('span',{class:'small muted'},' '+m.party+' · '+m.area)),S[m.id]!=null?h('b',{class:'tn'},S[m.id].toFixed(1)):null),h('div',{class:'small'},extra));
  show(h('section',{class:'hero'},h('span',{class:'kick'},'AI 의정 분석관 · 1단계'),h('h1',null,'AI ',h('mark',null,'의정 분석관')),h('p',null,'모든 의원을 같은 규칙으로 분석해 잘한 점, 요즘 흐름, 함께 봐야 할 사정을 정리합니다. 순위는 공개된 활동지수로 매기고, 분석관은 그 근거를 설명합니다.')),
+  h('h2',null,'🇰🇷 지금의 대한민국 정치는'),h('div',{class:'sec'},politicsBox()),
   h('h2',null,'👍 일 잘하는 의원 TOP 10'),scored.slice(0,10).map((m,i)=>row(m,reasons(m),i)),
   h('h2',null,'📈 요즘 가장 활발해진 의원'),rising.length?rising.map((x,i)=>row(x.m,`대표발의 최근 90일 ${x.m.b90}건 (그 전 90일 ${x.m.b180}건)`+(x.m.v90!=null&&x.m.v180!=null?` · 표결 참여 ${x.m.v180}% → ${x.m.v90}%`:''),i)):h('p',{class:'small muted'},'최근 90일 흐름 자료를 다음 수집 때부터 계산합니다.'),
   h('h2',null,'🌱 주목할 초선 의원'),rookies.map((m,i)=>row(m,reasons(m),i)),

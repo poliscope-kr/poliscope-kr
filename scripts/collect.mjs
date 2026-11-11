@@ -298,7 +298,9 @@ writeFileSync(`${OUT}/weak.json`, JSON.stringify(Object.fromEntries(Object.entri
 writeFileSync(`${OUT}/fields.json`, JSON.stringify(Object.fromEntries(Object.entries(FIELDS).map(([k, [n, re]]) => [k, { name: n, words: re.source.split('|') }]))));
 { const un = {}; let hit = 0; for (const b of bills) { if (fieldsOf(b.BILL_NAME || '').length) hit++; else { const n = String(b.BILL_NAME || '').split(' ')[0]; un[n] = (un[n] || 0) + 1; } }
   log(`생활 분야 분류: ${hit}/${bills.length}건 (${Math.round(hit / bills.length * 100)}%). 미분류 상위: ` + Object.entries(un).sort((a, b) => b[1] - a[1]).slice(0, 30).map(([n, c]) => `${n} ${c}`).join(', ')); }
-writeFileSync(`${OUT}/meta.json`, JSON.stringify({ updated: new Date().toISOString(), age: AGE, members: members.length, bills: bills.length, voteBills: Object.keys(cache).length, voteBillsTotal: voteBills.length, incomplete, warnings }, null, 1));
+// 본회의 표결의 합의 정도: 찬성이 투표한 의원의 3분의 2 이상이면 '넓은 합의', 적은 쪽이 15% 이상이면 '찬반이 갈림'
+const consensus = { total: 0, wide: 0, split: 0 }; for (const v of Object.values(cache)) { const cast = (v.y?.length || 0) + (v.n?.length || 0); if (cast < 100) continue; consensus.total++; if (v.y.length / cast >= 2 / 3) consensus.wide++; if (Math.min(v.y.length, v.n.length) / cast >= .15) consensus.split++; }
+writeFileSync(`${OUT}/meta.json`, JSON.stringify({ updated: new Date().toISOString(), age: AGE, members: members.length, bills: bills.length, voteBills: Object.keys(cache).length, voteBillsTotal: voteBills.length, consensus, incomplete, warnings }, null, 1));
 console.log(`완료: 의원 ${members.length}명, 법안 ${bills.length}건, 표결 의안 ${Object.keys(cache).length}건 (이번 ${fetched}건)`);
 warnings.forEach(w => console.log('주의:', w));
 if (process.env.GITHUB_OUTPUT) writeFileSync(process.env.GITHUB_OUTPUT, `incomplete=${incomplete}\n`, { flag: 'a' });
