@@ -100,6 +100,7 @@ button.hb{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-
 .favc{display:flex;flex-direction:column;gap:4px}.favc .row{align-items:center;gap:6px}.favc .nb{background:var(--ac);color:#fff;border-radius:10px;padding:0 8px;font-size:12px;font-weight:900}
 .streak{display:flex;gap:12px;align-items:center;padding:12px 14px;margin:10px 0;border-radius:16px;background:var(--hi-soft)}.sfire{font-size:34px}
 .polhead{display:flex;gap:14px;align-items:center}.ring2.big{width:96px;height:96px}.ring2.big span{width:72px;height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center}.ring2.big b{font-family:var(--disp);font-weight:400;font-size:30px;line-height:1}.ring2.big small{font-size:10px;color:var(--muted)}.callout{padding:10px 12px;border-radius:12px;background:var(--ac-soft);font-size:14px;line-height:1.55}
+.preport{display:flex;flex-direction:column;gap:12px}.pcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}.pcard{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:18px;background:var(--bg);border-top:6px solid var(--c)}.pcard .pn{font-size:18px}.phead{font-weight:800;font-size:14.5px;line-height:1.45}.waffle{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.waffle i{aspect-ratio:1;border-radius:6px;display:block}.pmet{display:flex;flex-direction:column;gap:3px;font-size:13px}
 .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}.mgrid .card{margin:0}.ghead{margin:18px 0 8px;display:flex;gap:6px;align-items:baseline}.frow{display:flex;gap:8px;flex-wrap:wrap}.frow input{flex:1;min-width:0}.fsel{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:16px var(--font)}.allbtn{display:block;margin:12px 0 4px;padding:13px 16px;border-radius:14px;background:var(--ac);color:#fff!important;font-weight:800;text-align:center;text-decoration:none}.hstats a.hlink{color:inherit;text-decoration:none;display:block;background:rgba(255,255,255,.1);border-radius:12px;padding:8px 10px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
 .split{background:var(--ac)}.split i{background:var(--teal)}
@@ -693,6 +694,42 @@ function politicsBox(){const box=h('div');(async()=>{const D=await lifeData();co
   h('p',{class:'small muted',style:'margin:0'},'SNS 비율은 인스타그램 계정이 확인된 의원만 대상이며, 글에 든 단어로 나눈 값입니다(한 게시물이 여러 분류에 들 수 있음). 아래 링크에서 민생 법안과 정부 정책 진행을 자세히 볼 수 있습니다.'),
   h('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},h('a',{class:'fchip',href:'#mylaw'},'이 법, 나랑 무슨 상관?'),h('a',{class:'fchip',href:'#pres'},'대통령 국정 운영 현황'),h('a',{class:'fchip',href:'#ranking/weak'},'약자 곁의 국회의원'),h('a',{class:'fchip',href:'#net'},'여야 협치 지도')))})();return box}
 
+// ---- 정당별 성적표 (모든 정당에 같은 규칙) ----
+const NWC=[['policy','민생·정책','var(--teal)'],['local','지역 활동','var(--vio)'],['fight','정치 공방','var(--hi)'],['case','의혹·수사','var(--bad)'],['etc','기타','var(--line)']];
+function waffle(parts,total){// 10칸 그림: 보도 10건이라면 몇 건이 어떤 내용인지
+ let cells=[],acc=0;parts.forEach(([k,l,c,v])=>{const n=Math.round((acc+v)/total*10)-Math.round(acc/total*10);acc+=v;for(let i=0;i<n;i++)cells.push(c)});while(cells.length<10)cells.push('var(--line)');cells=cells.slice(0,10);
+ return h('div',{class:'waffle','aria-hidden':'true'},cells.map(c=>h('i',{style:'background:'+c})))}
+function partyStats(p){const ms=M.filter(m=>m.party===p),n=ms.length,sum=f=>ms.reduce((t,m)=>t+(f(m)||0),0),avg=f=>{const a=ms.map(f).filter(v=>v!=null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
+ const nw={};ms.forEach(m=>{const t=m.nw?.totals;if(t)for(const[k,v]of Object.entries(t))if(k!=='photo')nw[k]=(nw[k]||0)+v});const nwT=Object.values(nw).reduce((a,b)=>a+b,0);
+ const igs=ms.map(m=>IG.members?.[m.id]).filter(x=>x?.posts),posts=igs.flatMap(x=>x.posts);
+ return{p,n,nw,nwT,vote:avg(m=>m.voteAdj),rep:sum(m=>m.rep)/n,life:sum(lifePassed)/n,cross:sum(m=>m.impact?.coBase)?sum(m=>m.impact?.coCross)/sum(m=>m.impact?.coBase)*100:null,
+  igN:igs.length,igLife:posts.length?posts.filter(x=>x.c.includes('life')||x.c.includes('work')).length/posts.length*100:null,igFight:posts.length?posts.filter(x=>x.c.includes('fight')).length/posts.length*100:null}}
+function partyReport(){const ps=partyOrder().filter(p=>p!=='무소속'&&M.filter(m=>m.party===p).length>=3).map(partyStats);
+ // 국회 전체 평균(무소속 포함)
+ const A=(()=>{const n=M.length,nw={};M.forEach(m=>{const t=m.nw?.totals;if(t)for(const[k,v]of Object.entries(t))if(k!=='photo')nw[k]=(nw[k]||0)+v});const nwT=Object.values(nw).reduce((a,b)=>a+b,0),v=M.map(m=>m.voteAdj).filter(x=>x!=null);return{nw,nwT,vote:v.reduce((a,b)=>a+b,0)/v.length,rep:M.reduce((t,m)=>t+(m.rep||0),0)/n,life:M.reduce((t,m)=>t+(lifePassed(m)||0),0)/n}})();
+ const pct=(s,k)=>s.nwT?(s.nw[k]||0)/s.nwT*100:0;
+ const cmp=(v,a,unit,hi=true)=>v==null||a==null?null:h('span',{class:'small',style:`color:${(v>=a)===hi?'var(--teal)':'var(--hi)'}`},` (국회 평균 ${a.toFixed(unit==='%'?0:1)}${unit} ${v>=a?'▲':'▼'})`);
+ const card=s=>{const parts=NWC.map(([k,l,c])=>[k,l,c,s.nw[k]||0]).filter(x=>x[3]);const top=[...parts].filter(x=>x[0]!=='etc').sort((a,b)=>b[3]-a[3]);
+  const head=s.nwT?`보도 10건 중 민생·정책 ${Math.round(pct(s,'policy')/10)}건, 정치 공방 ${Math.round(pct(s,'fight')/10)}건, 의혹·수사 ${Math.round(pct(s,'case')/10)}건`:'보도 자료 부족';
+  return h('div',{class:'pcard',style:'--c:'+pcol(s.p)},h('div',{class:'row'},h('b',{class:'pn'},s.p),h('span',{class:'small muted'},`의원 ${s.n}명`)),
+   h('div',{class:'phead'},head),s.nwT?[waffle(parts,s.nwT),h('div',{class:'legend'},parts.map(([k,l,c,v])=>h('span',null,h('i',{style:'background:'+c}),`${l} ${Math.round(v/s.nwT*100)}%`)))]:null,
+   h('div',{class:'pmet'},
+    h('div',null,'🗳️ 표결 참여 ',h('b',{class:'tn'},s.vote==null?'–':s.vote.toFixed(1)+'%'),cmp(s.vote,A.vote,'%')),
+    h('div',null,'📝 1인당 대표발의 ',h('b',{class:'tn'},s.rep.toFixed(1)+'건'),cmp(s.rep,A.rep,'건')),
+    h('div',null,'🧺 1인당 민생 법안 반영 ',h('b',{class:'tn'},s.life.toFixed(1)+'건'),cmp(s.life,A.life,'건')),
+    h('div',null,'🤝 다른 정당과 공동발의 ',h('b',{class:'tn'},s.cross==null?'–':Math.round(s.cross)+'%')),
+    s.igN?h('div',null,`📱 의원 SNS(${s.igN}명) 민생·의정 `,h('b',{class:'tn'},Math.round(s.igLife)+'%'),' · 정치 공방 ',h('b',{class:'tn'},Math.round(s.igFight)+'%')):h('div',{class:'small muted'},'📱 인스타 계정이 확인된 의원이 없어 SNS 분석 없음')))};
+ const bars=(t,f,unit,hint)=>{const rows=ps.map(s=>[s.p,f(s)]).filter(x=>x[1]!=null).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...rows.map(x=>x[1]));return h('div',null,h('b',null,t),hint?h('div',{class:'small muted'},hint):null,h('div',{class:'hbars'},rows.map(([p,v])=>{const r=hbar(p,Math.round(v*10)/10,mx,pcol(p));r.querySelector('.v').textContent=(unit==='%'?Math.round(v):v.toFixed(1))+unit;return r})))};
+ return h('div',{class:'preport'},
+  h('p',{class:'small',style:'margin:0'},'모든 정당에 같은 규칙을 씁니다. 기사는 의원 이름이 들어간 최근 기사 제목을 공개된 단어 규칙으로 나눈 것이고, 정당의 의도나 옳고 그름은 판정하지 않습니다.'),
+  h('h3',{style:'margin:8px 0 0'},'한눈에 비교'),
+  bars('보도 중 민생·정책 기사 비율',s=>s.nwT?pct(s,'policy'):null,'%','높을수록 정책·입법 관련 보도가 많음'),
+  bars('보도 중 정치 공방 + 의혹·수사 기사 비율',s=>s.nwT?pct(s,'fight')+pct(s,'case'):null,'%','높을수록 공방·의혹 관련 보도가 많음'),
+  bars('의원 1인당 민생 법안 반영',s=>s.life,'건'),
+  bars('다른 정당 의원과 함께 낸 법안 비율',s=>s.cross,'%','법안을 내려면 의원 10명이 함께해야 해서, 의원이 10명 미만인 정당은 다른 정당과 손잡는 비율이 높게 나옵니다.'),
+  h('h3',{style:'margin:8px 0 0'},'정당별 카드'),h('div',{class:'pcards'},ps.map(card)),
+  h('details',null,h('summary',{class:'small'},'기사 분류 규칙과 한계'),h('p',{class:'small',style:'margin:4px 0'},'기사 제목에 기소·재판·수사·의혹 등이 있으면 ‘의혹·수사’, 비판·규탄·공방·특검 등이면 ‘정치 공방’, 법안·발의·국정감사·정책·예산 등이면 ‘민생·정책’, 지역구·민원·방문·국비 등이면 ‘지역 활동’입니다(앞의 규칙이 우선). 사진 기사는 뺐습니다. 의원 수가 많은 정당일수록 보도 수가 많고, 언론의 보도 선택도 결과에 영향을 줍니다. 규칙은 ‘자료·방법’에 공개되어 있습니다.')))}
+
 function analyst(){const S=index().score,scored=M.filter(m=>S[m.id]!=null).sort((a,b)=>S[b.id]-S[a.id]);
  const reasons=m=>{const a=analyze_(m);return a.good.slice(0,3).join(' · ')||'여러 지표가 고르게 높음'};
  const rising=M.filter(m=>m.b90!=null&&(m.b90||0)>=3).map(m=>({m,d:(m.b90||0)-(m.b180||0),dv:m.v90!=null&&m.v180!=null?m.v90-m.v180:0})).filter(x=>x.d>0).sort((a,b)=>b.d-a.d||b.dv-a.dv).slice(0,10);
@@ -700,6 +737,7 @@ function analyst(){const S=index().score,scored=M.filter(m=>S[m.id]!=null).sort(
  const row=(m,extra,i)=>h('a',{class:'card',href:'#m/'+m.id},h('div',{class:'row'},h('span',{class:'name'},(i!=null?(i+1)+'. ':'')+m.name,h('span',{class:'small muted'},' '+m.party+' · '+m.area)),S[m.id]!=null?h('b',{class:'tn'},S[m.id].toFixed(1)):null),h('div',{class:'small'},extra));
  show(h('section',{class:'hero'},h('span',{class:'kick'},'AI 의정 분석관 · 1단계'),h('h1',null,'AI ',h('mark',null,'의정 분석관')),h('p',null,'모든 의원을 같은 규칙으로 분석해 잘한 점, 요즘 흐름, 함께 봐야 할 사정을 정리합니다. 순위는 공개된 활동지수로 매기고, 분석관은 그 근거를 설명합니다.')),
   h('h2',null,'🇰🇷 지금의 대한민국 정치는'),h('div',{class:'sec'},politicsBox()),
+  h('h2',null,'🏛️ 정당별 성적표'),h('div',{class:'sec'},partyReport()),
   h('h2',null,'👍 일 잘하는 의원 TOP 10'),scored.slice(0,10).map((m,i)=>row(m,reasons(m),i)),
   h('h2',null,'📈 요즘 가장 활발해진 의원'),rising.length?rising.map((x,i)=>row(x.m,`대표발의 최근 90일 ${x.m.b90}건 (그 전 90일 ${x.m.b180}건)`+(x.m.v90!=null&&x.m.v180!=null?` · 표결 참여 ${x.m.v180}% → ${x.m.v90}%`:''),i)):h('p',{class:'small muted'},'최근 90일 흐름 자료를 다음 수집 때부터 계산합니다.'),
   h('h2',null,'🌱 주목할 초선 의원'),rookies.map((m,i)=>row(m,reasons(m),i)),
