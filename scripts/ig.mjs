@@ -76,7 +76,9 @@ data.president = prev.president || null;
 
 try {
   // 0) 대통령 계정
-  if (data.president?.u) { const r = await bd(data.president.u, true); if (r.ok) data.president = analyze(r.ok, data.president.src || 'auto'); }
+  const presManual = load(`${OUT}/ig-accounts.json`, {}).president;
+  if (presManual && data.president?.u !== presManual) { const r = await bd(presManual, true); if (r.ok) data.president = analyze(r.ok, 'manual'); else console.log('대통령 계정 조회 실패: ' + (r.why || '')); }
+  else if (data.president?.u) { const r = await bd(data.president.u, true); if (r.ok) data.president = analyze(r.ok, data.president.src || 'auto'); }
   else for (const h of PRES_CANDS) { if ((prev.presTried || []).includes(h)) continue; const r = await bd(h, true); if (r.stop) break; (data.presTried = data.presTried || prev.presTried || []).push(h); if (r.ok && /이재명/.test(`${r.ok.name || ''} ${r.ok.biography || ''}`)) { data.president = analyze(r.ok, 'auto'); break; } }
   // 1) 계정이 정해진 의원: 오래전에 갱신한 순서로 통계 갱신
   const known = M.filter(m => manual[m.id] || (manual[m.id] !== null && data.members[m.id]?.u))
