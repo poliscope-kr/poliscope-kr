@@ -1,4 +1,4 @@
-// '대통령 뭐하노': 현 정부가 국회에 낸 법률안(제안자 = 정부)과 처리 결과를 모은다.
+// '대통령 국정 운영 현황': 현 정부가 국회에 낸 법률안(제안자 = 정부)과 처리 결과를 모은다.
 // 자료: 열린국회정보 '의안정보 통합(TVBPMBILL11)' + '본회의 표결 의안(ncocpgfiaoituanbr)'. 평가는 하지 않고 기록만 모은다.
 import { writeFileSync } from 'node:fs';
 const KEY = process.env.ASSEMBLY_API_KEY, BASE = process.env.ASSEMBLY_BASE || 'https://open.assembly.go.kr/portal/openapi';
