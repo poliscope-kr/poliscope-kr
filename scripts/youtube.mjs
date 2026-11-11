@@ -82,7 +82,7 @@ const byCh = {}; for (const [id, o] of Object.entries(out)) { const c = channels
 const shared = Object.values(byCh).filter(a => a.length > 1).flat();
 for (const id of shared) { unresolved.push(members.find(m => m.id === id).name); delete out[id]; }
 // 대통령 채널: 지정한 영상(쇼츠)의 채널을 찾아 같은 방식으로 센다. 제목은 인스타그램과 같은 분류 규칙으로 나눈다.
-let president = JSON.parse(existsSync(`${OUT}/youtube.json`) ? readFileSync(`${OUT}/youtube.json`, 'utf8') : '{}').president || null;
+let president = null; // 지정한 채널이 없으면 비운다(잘못 잡힌 채널이 남지 않도록)
 const PRES_VIDEO = (existsSync(`${OUT}/ig-accounts.json`) ? JSON.parse(readFileSync(`${OUT}/ig-accounts.json`, 'utf8')).presidentYoutubeVideo : null) || process.env.YT_PRES_VIDEO;
 if (PRES_VIDEO && !quota) {
   try {
