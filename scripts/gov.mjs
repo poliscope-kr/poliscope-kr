@@ -61,6 +61,13 @@ const bills = gov.map(r => {
     y: v ? +v.YES_TCNT : null, no: v ? +v.NO_TCNT : null, ab: v ? +v.BLANK_TCNT : null, s: status(r), u: r.LINK_URL || '' };
 }).sort((a, b) => String(b.d).localeCompare(String(a.d)));
 const prevN = govAll.length - gov.length;
+// 법률안이 아닌 정부 의안(예산안·추가경정예산안·동의안 등). 의안정보 통합 자료에 없으면 본회의 표결 자료에서 찾는다.
+const nonLaw = all.filter(r => r.PROPOSER_KIND === '정부' && !isLaw(r.BILL_NAME) && String(r.PROPOSE_DT || '') >= SINCE);
+const other = nonLaw.map(r => { const v = byId[r.BILL_ID]; return { id: r.BILL_ID, n: r.BILL_NAME, d: r.PROPOSE_DT, pr: r.PROC_RESULT_CD || '', pd: r.PROC_DT || '', y: v ? +v.YES_TCNT : null, no: v ? +v.NO_TCNT : null, ab: v ? +v.BLANK_TCNT : null, u: r.LINK_URL || '' }; });
+const seen = new Set(other.map(o => o.id));
+for (const v of votes) if (!seen.has(v.BILL_ID) && /예산|기금운용계획/.test(v.BILL_NAME || '') && String(v.PROC_DT || '') >= SINCE) other.push({ id: v.BILL_ID, n: v.BILL_NAME, d: '', pr: v.PROC_RESULT_CD || '', pd: v.PROC_DT || '', y: +v.YES_TCNT, no: +v.NO_TCNT, ab: +v.BLANK_TCNT, u: v.LINK_URL || '' });
+other.sort((a, b) => String(b.pd || b.d).localeCompare(String(a.pd || a.d)));
+console.log(`정부 기타 의안 ${other.length}건: ` + other.slice(0, 15).map(o => `${o.pd || o.d} ${o.n} ${o.pr}`).join(' / '));
 const cnt = {}; bills.forEach(b => cnt[b.s] = (cnt[b.s] || 0) + 1);
-writeFileSync(`${OUT}/gov.json`, JSON.stringify({ updated: new Date().toISOString(), since: SINCE, total: bills.length, prevN, allBills: all.length, kinds, status: cnt, bills }));
+writeFileSync(`${OUT}/gov.json`, JSON.stringify({ updated: new Date().toISOString(), since: SINCE, total: bills.length, prevN, allBills: all.length, kinds, status: cnt, bills, other }));
 console.log(`정부 제출 법률안(${SINCE} 이후) ${bills.length}건, 상태: ${JSON.stringify(cnt)}`);
