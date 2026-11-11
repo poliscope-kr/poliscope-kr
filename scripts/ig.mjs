@@ -48,7 +48,7 @@ const CATS = {
   life: { name: '민생·정책', re: new RegExp([...LIFEW, '민생', '물가', '일자리', '주거', '전세', '복지', '소상공인', '자영업', '청년', '어르신', '아동', '돌봄', '피해 지원', '대책', '지원금', '생활'].map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')) },
   local: { name: '지역 활동', re: /지역구|지역 주민|주민|현장 방문|현장|민원|동네|우리 지역/ },
   fight: { name: '정치 공방·비판', re: /규탄|비판|심판|탄핵|특검|독재|내란|정권|사퇴|거짓|망언|막말|방탄|공세|무능|폭주|국정조사|정치 보복/ },
-  party: { name: '선거·당무', re: /선거|후보|공천|경선|당대표|최고위|전당대회|당원|유세|총선|대선|지방선거/ },
+  party: { name: '선거·당무', re: /선거|(?<!선수 )후보(?!선수|생)|공천|경선|당대표|최고위원|전당대회|(?<!담)당원|유세|총선|대선(?![수배박])|지방선거/ },
 };
 export const CAT_RULES = Object.fromEntries(Object.entries(CATS).map(([k, v]) => [k, { name: v.name, words: String(v.re.source).split('|').slice(0, 40) }]));
 function analyze(a, src, localWords = []) {
