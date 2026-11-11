@@ -71,3 +71,28 @@ console.log(`정부 기타 의안 ${other.length}건: ` + other.slice(0, 15).map
 const cnt = {}; bills.forEach(b => cnt[b.s] = (cnt[b.s] || 0) + 1);
 writeFileSync(`${OUT}/gov.json`, JSON.stringify({ updated: new Date().toISOString(), since: SINCE, total: bills.length, prevN, allBills: all.length, kinds, status: cnt, bills, other }));
 console.log(`정부 제출 법률안(${SINCE} 이후) ${bills.length}건, 상태: ${JSON.stringify(cnt)}`);
+
+// 3. '이 법, 나랑 무슨 상관?'·'통과할까?' 게임용: 생활 상황별 단어가 법률 이름에 든 22대 법률안(제안자 무관)
+const LIFE = {
+  youth: { name: '청년·취준생', words: ['청년', '최저임금', '직업안정', '직업교육', '고용보험', '취업', '구직', '국민연금'] },
+  rent: { name: '전·월세 사는 사람', words: ['주택임대차', '전세사기', '임대차', '공공주택', '민간임대주택', '주거급여', '주거기본', '전세'] },
+  student: { name: '대학생', words: ['고등교육', '학자금', '대학', '장학', '평생교육'] },
+  worker: { name: '직장인', words: ['근로기준', '퇴직급여', '남녀고용평등', '육아휴직', '근로자', '산업안전', '소득세법', '임금채권'] },
+  living: { name: '혼자 사는 사람·생활비', words: ['소비자', '전자상거래', '전기통신', '할부', '대부업', '이자제한', '대중교통', '도시가스', '1인가구', '택배'] },
+  family: { name: '신혼·육아', words: ['저출산', '출산', '육아', '보육', '아동수당', '모자보건', '영유아', '난임', '신혼'] },
+  pet: { name: '반려동물 가구', words: ['동물보호', '반려', '수의사', '동물'] },
+  digital: { name: '게임·디지털', words: ['게임', '정보통신망', '개인정보', '인공지능', '저작권', '콘텐츠', '전자금융', '가상자산'] },
+};
+const laws = all.filter(r => isLaw(r.BILL_NAME));
+if (laws[0]) console.log('의안 필드: ' + Object.keys(laws[0]).join(','));
+const lifeBills = [];
+for (const r of laws) {
+  const n = String(r.BILL_NAME || ''), t = Object.entries(LIFE).filter(([, f]) => f.words.some(w => n.includes(w))).map(([k]) => k);
+  if (!t.length) continue;
+  const v = byId[r.BILL_ID];
+  lifeBills.push({ id: r.BILL_ID, n, d: r.PROPOSE_DT || '', p: String(r.PROPOSER || r.RST_PROPOSER || '').slice(0, 40), k: r.PROPOSER_KIND || '', s: status(r), pd: r.PROC_DT || '', c: (r.CURR_COMMITTEE || '').replace(/위원회$/, ''), cpd: r.CMT_PRESENT_DT || '', t, ...(v ? { y: +v.YES_TCNT, no: +v.NO_TCNT } : {}) });
+}
+lifeBills.sort((a, b) => String(b.d).localeCompare(String(a.d)));
+const base = {}; laws.forEach(r => { const k = status(r); base[k] = (base[k] || 0) + 1; });
+writeFileSync(`${OUT}/life.json`, JSON.stringify({ updated: new Date().toISOString(), rules: LIFE, base, total: laws.length, bills: lifeBills }));
+console.log(`생활 상황별 법률안 ${lifeBills.length}건 (전체 법률안 ${laws.length}건, 상태 ${JSON.stringify(base)})`);
