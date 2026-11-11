@@ -56,7 +56,7 @@ function analyze(a, src, localWords = []) {
   const avg = (arr, k) => arr.length ? Math.round(arr.reduce((s, x) => s + (x[k] || 0), 0) / arr.length) : null;
   const cap = x => String(x.caption || '');
   const catsOf = x => { const t = cap(x), c = Object.entries(CATS).filter(([, v]) => v.re.test(t)).map(([k]) => k); if (!c.includes('local') && localWords.some(w => w && t.includes(w))) c.push('local'); return c; };
-  const posts = media.map(x => ({ d: x.timestamp?.slice(0, 10), c: catsOf(x) }));
+  const posts = media.map(x => ({ d: x.timestamp?.slice(0, 10), c: catsOf(x), l: x.like_count ?? null, t: x.timestamp ? new Date(Date.parse(x.timestamp) + 9 * 36e5).getUTCHours() : null }));
   const cats = {}; posts.forEach(p => (p.c.length ? p.c : ['etc']).forEach(k => cats[k] = (cats[k] || 0) + 1));
   const ex = {}; media.forEach((x, i) => posts[i].c.forEach(k => { if (!ex[k]) ex[k] = { d: posts[i].d, s: cap(x).replace(/\s+/g, ' ').slice(0, 50), u: x.permalink || '' }; }));
   const topics = {}; for (const x of media) for (const [k, f] of Object.entries(FIELDS)) if ((f.words || []).some(w => cap(x).includes(w))) topics[k] = (topics[k] || 0) + 1;
