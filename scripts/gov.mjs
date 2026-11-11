@@ -57,7 +57,7 @@ const status = r => {
 };
 const bills = gov.map(r => {
   const v = byId[r.BILL_ID];
-  return { id: r.BILL_ID, n: r.BILL_NAME, d: r.PROPOSE_DT, c: r.CURR_COMMITTEE || '', pr: r.PROC_RESULT_CD || '', pd: r.PROC_DT || '',
+  return { id: r.BILL_ID, n: r.BILL_NAME, d: r.PROPOSE_DT, c: r.CURR_COMMITTEE || '', cpd: r.CMT_PRESENT_DT || '', cd: r.CMT_PROC_DT || '', pr: r.PROC_RESULT_CD || '', pd: r.PROC_DT || '',
     y: v ? +v.YES_TCNT : null, no: v ? +v.NO_TCNT : null, ab: v ? +v.BLANK_TCNT : null, s: status(r), u: r.LINK_URL || '' };
 }).sort((a, b) => String(b.d).localeCompare(String(a.d)));
 const prevN = govAll.length - gov.length;
