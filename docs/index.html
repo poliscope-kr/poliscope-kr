@@ -587,7 +587,7 @@ async function netPage(id){const N=await netData();const parties=partyOrder().fi
  // 의원 1쌍당 평균 공동발의 수로 칸의 진하기를 정한다(큰 정당이 무조건 진해지지 않도록)
  const per=(a,b)=>{const pairs=a===b?seats(a)*(seats(a)-1)/2:seats(a)*seats(b);return pairs?mat(a,b)/pairs:0},pmax=Math.max(.01,...parties.flatMap(a=>parties.map(b=>a===b?0:per(a,b))));
  const grid=h('div',{class:'mgrid2',style:`grid-template-columns:5.2em repeat(${parties.length},1fr)`},h('span'),parties.map(p=>h('span',{class:'mh'},p.replace(/당$/,''))),parties.flatMap(a=>[h('span',{class:'mh l'},a.replace(/당$/,'')),...parties.map(b=>a===b?h('span',{class:'mc same',title:'같은 정당'},'–'):h('span',{class:'mc',style:`--a:${(per(a,b)/pmax).toFixed(2)}`,title:`${a}–${b} 함께 낸 법안 ${fmt(mat(a,b))}건`},fmt(mat(a,b))))]));
- const best=topBy(cross,10);const edges=(N.edges||[]).slice(0,10).map(([a,b,n])=>[byId(a),byId(b),n]).filter(x=>x[0]&&x[1]);
+ const best=topBy(cross,10);const edges=(N.edges||[]).map(([a,b,n])=>[byId(a),byId(b),n]).filter(x=>x[0]&&x[1]&&x[0].party!=='무소속'&&x[1].party!=='무소속'&&x[0].party!==x[1].party).slice(0,10);
  const ego=h('div');let cur=id||myId()||(best[0]?.m.id)||M[0].id;
  function drawEgo(){const m=byId(cur),p=N.per[cur];ego.textContent='';if(!m)return;if(!p){ego.append(h('p',{class:'muted'},'공동발의 자료가 없습니다.'));return}
   const nodes=[...p.cross.map(x=>[...x,1]),...p.same.map(x=>[...x,0])].map(([c,n,x])=>({m:byId(c),n,x})).filter(o=>o.m),W=340,H=340,cx=W/2,cy=H/2,R=128,mx=Math.max(1,...nodes.map(o=>o.n));
@@ -601,7 +601,7 @@ async function netPage(id){const N=await netData();const parties=partyOrder().fi
   h('h2',null,'의원별 협치 연결망'),h('div',{class:'sec'},memberPicker(cur,v=>{cur=v;drawEgo()},'의원 고르기'),ego),
   h('h2',null,'정당끼리 함께 낸 법안'),h('div',{class:'sec'},h('p',{class:'small muted',style:'margin:0'},'숫자는 두 정당 의원이 대표발의자·공동발의자로 함께 이름을 올린 횟수입니다. 칸의 진하기는 의원 수 차이를 고려해 의원 한 쌍당 평균으로 정했습니다.'),h('div',{style:'overflow-x:auto'},grid)),
   h('h2',null,'협치율 높은 의원 TOP 10'),h('div',{class:'sec'},h('div',{class:'hbars'},best.map(x=>hbar(`${x.rank}. ${x.m.name} (${x.m.party})`,Math.round(x.v),100,pcol(x.m.party)))),h('p',{class:'small muted',style:'margin:0'},'협치율 = 공동발의자가 있는 대표발의 법안 중 다른 정당 의원이 한 명 이상 함께한 비율(대표발의 20건 이상, 무소속 제외).')),
-  edges.length?[h('h2',null,'가장 자주 손잡은 여야 의원 짝'),edges.map(([a,b,n])=>h('div',{class:'card'},h('div',{class:'row'},h('span',null,h('a',{href:'#net/'+a.id},a.name),h('span',{class:'small muted'},' '+a.party),' 🤝 ',h('a',{href:'#net/'+b.id},b.name),h('span',{class:'small muted'},' '+b.party)),h('b',{class:'tn'},n+'건'))))]:null,
+  edges.length?[h('h2',null,'가장 자주 손잡은 다른 정당 의원 짝'),h('p',{class:'small muted'},'무소속 의원은 제외했습니다.'),edges.map(([a,b,n])=>h('div',{class:'card'},h('div',{class:'row'},h('span',null,h('a',{href:'#net/'+a.id},a.name),h('span',{class:'small muted'},' '+a.party),' 🤝 ',h('a',{href:'#net/'+b.id},b.name),h('span',{class:'small muted'},' '+b.party)),h('b',{class:'tn'},n+'건'))))]:null,
   fix('[정정] 여야 협치 지도'));drawEgo()}
 
 // ---- 3. 의원 1:1 비교 배틀 ----
