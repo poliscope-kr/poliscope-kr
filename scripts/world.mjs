@@ -32,7 +32,7 @@ try {
   }
   out.updated = new Date().toISOString();
   const art = await get({ query: `${Q} sourcelang:english`, mode: 'artlist', maxrecords: 20, sort: 'hybridrel', timespan: '7d' });
-  out.articles = (art.articles || []).map(a => ({ t: a.title, u: a.url, d: String(a.seendate || '').slice(0, 8), s: a.domain, c: a.sourcecountry })).filter(a => a.t && /^https?:/.test(a.u)).slice(0, 15);
+  out.articles = (art.articles || []).map(a => ({ t: a.title, u: a.url, d: String(a.seendate || '').slice(0, 8), s: a.domain, c: a.sourcecountry })).filter(a => a.t && /^https?:/.test(a.u) && /south korea|seoul|lee jae|national assembly|korean (government|lawmakers?|parliament|politic|president|opposition|ruling)/i.test(a.t)).slice(0, 15);
   out.updated = new Date().toISOString();
   console.log(`해외 보도: 논조 최근 30일 ${out.tone30} (그 전 ${out.tonePrev30}), 기사 ${out.articles.length}건, 나라 ${Object.keys(out.byCountry).length}곳`);
 } catch (e) { console.log('GDELT 수집 실패, 기존 자료 유지: ' + e.message); }
