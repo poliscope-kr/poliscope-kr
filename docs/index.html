@@ -1153,7 +1153,7 @@ function festEffBox(){const box=h('div',{class:'sec'});const E=FEFF;if(!E?.govs?
  box.append(h('p',{class:'small',style:'margin:0'},`축제가 열린 날의 외지인·외국인 방문자(통신 자료)를 평소 같은 요일과 비교해 “축제 덕분에 더 온 사람”을 추정하고, 그 지자체의 ${E.y}년 행사·축제 예산을 그 수로 나눴습니다. ${E.until}월까지 열린 열흘 이하 축제 기준. 등록된 축제가 3개 이상인 지자체 ${G.length}곳만 비교합니다(축제가 1~2개만 등록된 곳은 예산과 맞지 않아 뺐습니다).`),tabs,list,one,
   h('details',null,h('summary',{class:'small'},'이 숫자를 읽을 때 주의할 점'),h('ul',{class:'small',style:'margin:4px 0;padding-left:18px'},
    h('li',null,'예산은 축제 하나가 아니라 그 지자체의 행사·축제 예산 전체입니다. 한국관광공사에 등록되지 않은 행사도 예산에는 들어 있습니다.'),
-   h('li',null,'통신 자료의 “방문자”는 일정 시간 머문 사람으로, 관광객과 같지 않습니다. 명절·연휴·날씨도 방문자 수에 영향을 줍니다.'),
+   h('li',null,'열흘이 넘는 큰 축제와 한국관광공사에 등록되지 않은 축제는 계산에서 빠집니다. 그래서 대표 축제가 긴 지자체는 1명당 예산이 실제보다 크게 나올 수 있습니다.'),h('li',null,'통신 자료의 “방문자”는 일정 시간 머문 사람으로, 관광객과 같지 않습니다. 명절·연휴·날씨도 방문자 수에 영향을 줍니다.'),
    h('li',null,'주민 화합·문화 보존이 목적인 행사는 방문자 수로 평가할 수 없습니다. 이 숫자는 효과의 한 측면일 뿐 낭비 판정이 아닙니다.'))),
   h('p',{class:'small muted',style:'margin:0'},'자료: '+E.src));return box}
 function wcase(c,open){const [ic,cl]=WCAT[c.cat]||['•',''],row=(k,v)=>v&&v!=='–'?h('div',{class:'wrow'},h('span',{class:'muted'},k),h('span',null,v)):null;
