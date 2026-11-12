@@ -1,0 +1,712 @@
+[
+ {
+  "name": "영상회의록(발언영상)",
+  "service": "SPEAKLISTALL",
+  "request": [
+   "CT1:대수*",
+   "TAKING_DATE:회의일자*",
+   "TITLE:회의제목",
+   "ESSENTIAL_PERSON:발언자"
+  ],
+  "output": [
+   "CT1:대수",
+   "CT2:회",
+   "CT3:차",
+   "TAKING_DATE:회의일자",
+   "TITLE:회의제목",
+   "ESSENTIAL_PERSON:발언자",
+   "REC_TIME:재생시간",
+   "LINK_URL:링크주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "회의록 대별 위원회 목록",
+  "service": "nkimylolanvseqagq",
+  "request": [
+   "TH:대수",
+   "CLASS_ID:회의종류",
+   "CMIT_NM:위원회명"
+  ],
+  "output": [
+   "TH:대수",
+   "CLASS_ID:회의종류",
+   "CLASS_NM:회의종류명",
+   "CMIT_NM:위원회명",
+   "CMIT_CD:위원회코드",
+   "SUB_CMIT_CD:소위원회코드",
+   "SUB_CMIT_NM:소위원회명"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "공청회 회의록",
+  "service": "VCONFPHCONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "예결산특별위원회 회의록",
+  "service": "VCONFBUDGETCONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "특별위원회 회의록",
+  "service": "VCONFSPCCONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "소위원회 회의록",
+  "service": "VCONFSUBCCONFLIST",
+  "request": [
+   "ERACO:대수",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "SB_CMIT_CD:소위원회코드",
+   "SB_CMIT_NM:소위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "회의록별 부록 정보",
+  "service": "VCONFATTAPPENDIXLIST",
+  "request": [
+   "CONF_ID:회의ID*"
+  ],
+  "output": [
+   "CONF_KND:회의종류",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_ID:회의ID",
+   "FILE_KND:파일종류",
+   "FILE_CN:파일설명",
+   "DOWN_URL:다운URL",
+   "CONFER_NUM:회의번호"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "외빈연설 포함 회의록",
+  "service": "VCONFFDCONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "대통령시정연설 포함 회의록",
+  "service": "VCONFSNACONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "대통령취임연설 포함 회의록",
+  "service": "VCONFDNACONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "연석회의 회의록",
+  "service": "VCONFJMCONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "청문회 회의록",
+  "service": "VCONFCHCONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "인사청문회 회의록",
+  "service": "VCONFCFRMCONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국정조사 회의록",
+  "service": "VCONFPIPCONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국정감사 회의록",
+  "service": "VCONFAPIGCONFLIST",
+  "request": [
+   "ERACO:대수*",
+   "CMIT_CD:위원회코드"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_CD:위원회코드",
+   "CMIT_NM:위원회명",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "의안별 회의록 목록",
+  "service": "VCONFBILLCONFLIST",
+  "request": [
+   "BILL_ID:의안 ID*"
+  ],
+  "output": [
+   "BILL_ID:의안 ID",
+   "BILL_NM:의안명",
+   "CONF_KND:회의 종류",
+   "CONF_ID:회의 ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "DOWN_URL:다운URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "회의록별 상세정보",
+  "service": "VCONFDETAIL",
+  "request": [
+   "CONF_ID:회의ID*"
+  ],
+  "output": [
+   "CONF_ID:회의ID",
+   "ERACO:대수",
+   "SESS:회기",
+   "DGR:차수",
+   "CONF_DT:회의일자",
+   "CONF_KND:회의종류",
+   "CMIT_NM:위원회명",
+   "SB_CMIT_NM:소위원회명",
+   "CONF_PLC:회의장소",
+   "BG_PTM:시작시간",
+   "ED_PTM:종료시간",
+   "CONF_PTM:회의시간",
+   "HR_HRG_YN:인사청문회여부",
+   "PBHRG_YN:공청회여부",
+   "HRG_YN:청문회여부",
+   "SITG_YN:연석회의여부",
+   "RMND_SPH_YN:대통령위임연설여부",
+   "RDJM_SPH_YN:대통령시정연설여부",
+   "FRNGUS_SPH_YN:외빈연설여부",
+   "DOWN_URL:다운로드 URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "영상회의록 목록",
+  "service": "WEBCASTVCONF",
+  "request": [
+   "ERACO:대수",
+   "CONF_DT:회의일자"
+  ],
+  "output": [
+   "ERACO:대수",
+   "CONF_DT:회의일자",
+   "CONF_PTM:회의시간",
+   "CONF_NM:회의명",
+   "LINK_URL:링크URL"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "전원위원회 회의록",
+  "service": "ngytonzwavydlbbha",
+  "request": [
+   "TITLE:회의명",
+   "CLASS_NAME:회의종류명",
+   "DAE_NUM:대수*",
+   "CONF_DATE:회의날짜*",
+   "SUB_NUM:안건번호",
+   "SUB_NAME:안건명"
+  ],
+  "output": [
+   "CONFER_NUM:회의번호",
+   "TITLE:회의명",
+   "CLASS_NAME:회의종류명",
+   "DAE_NUM:대수",
+   "CONF_DATE:회의날짜",
+   "SUB_NAME:안건명",
+   "VOD_LINK_URL:영상회의록 링크",
+   "CONF_LINK_URL:요약정보 팝업",
+   "PDF_LINK_URL:PDF파일 링크",
+   "CONF_ID:회의ID"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "위원회 회의록",
+  "service": "ncwgseseafwbuheph",
+  "request": [
+   "TITLE:회의명",
+   "CLASS_NAME:회의종류명",
+   "DAE_NUM:대수*",
+   "COMM_NAME:위원회명",
+   "CONF_DATE:회의날짜*",
+   "SUB_NAME:안건명",
+   "DEPT_CD:위원회코드"
+  ],
+  "output": [
+   "CONFER_NUM:회의번호",
+   "TITLE:회의명",
+   "CLASS_NAME:회의종류명",
+   "DAE_NUM:대수",
+   "COMM_NAME:위원회명",
+   "VODCOMM_CODE:영상회의록",
+   "CONF_DATE:회의날짜",
+   "SUB_NAME:안건명",
+   "VOD_LINK_URL:영상회의록 링크",
+   "CONF_LINK_URL:요약정보 팝업",
+   "PDF_LINK_URL:PDF파일 링크",
+   "PDF_FILE_ID:회의록",
+   "DEPT_CD:위원회코드",
+   "CONF_ID:회의ID"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "국회의원 영상회의록(발언영상)",
+  "service": "npeslxqbanwkimebr",
+  "request": [
+   "CT1:대수*",
+   "TAKING_DATE:회의일자*",
+   "TITLE:회의제목",
+   "ESSENTIAL_PERSON:발언자"
+  ],
+  "output": [
+   "CT1:대수",
+   "CT2:회",
+   "CT3:차",
+   "TAKING_DATE:회의일자",
+   "TITLE:회의제목",
+   "ESSENTIAL_PERSON:발언자",
+   "REC_TIME:재생시간",
+   "LINK_URL:링크주소"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ },
+ {
+  "name": "본회의 회의록",
+  "service": "nzbyfwhwaoanttzje",
+  "request": [
+   "TITLE:회의명",
+   "CLASS_NAME:회의종류명",
+   "DAE_NUM:대수*",
+   "CONF_DATE:회의날짜*",
+   "SUB_NUM:안건번호",
+   "SUB_NAME:안건명"
+  ],
+  "output": [
+   "CONFER_NUM:회의번호",
+   "TITLE:회의명",
+   "CLASS_NAME:회의종류명",
+   "DAE_NUM:대수",
+   "CONF_DATE:회의날짜",
+   "SUB_NAME:안건명",
+   "VOD_LINK_URL:영상회의록 링크",
+   "CONF_LINK_URL:요약정보 팝업",
+   "PDF_LINK_URL:PDF파일 링크",
+   "CONF_ID:회의ID"
+  ],
+  "keys": [
+   "infNm",
+   "srvCd",
+   "apiEp",
+   "apiRes",
+   "apiTrf",
+   "variables",
+   "columns",
+   "urls",
+   "filters",
+   "messages"
+  ]
+ }
+]
