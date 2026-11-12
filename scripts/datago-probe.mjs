@@ -1,10 +1,5 @@
-const KEY = (process.env.DATA_GO_KR_KEY || '').trim();
-for (const id of ['15101972', '15101578']) {
-  try {
-    const html = await (await fetch(`https://www.data.go.kr/data/${id}/openapi.do`, { headers: { 'User-Agent': 'Mozilla/5.0' } })).text();
-    const t = (html.match(/<title>([^<]*)/) || [])[1];
-    const host = [...new Set(html.match(/"host"\s*:\s*"[^"]+"/g) || [])], paths = [...new Set(html.match(/"\/[A-Za-z0-9_]+"\s*:\s*\{\s*"get"/g) || [])];
-    console.log('==', id, t, host, paths.slice(0, 20));
-    const m = html.match(/"\/metcoRegnVisitrDDList"[\s\S]{0,1500}/) || html.match(/"\/searchFestival2?"[\s\S]{0,1500}/); if (m) console.log('파라미터', (m[0].match(/"name"\s*:\s*"[^"]+"/g) || []).join(' '));
-  } catch (e) { console.log(id, e.message); }
-}
+const KEY = (process.env.DATA_GO_KR_KEY || '').trim(), C = 'MobileOS=ETC&MobileApp=poliscope&_type=json';
+for (const u of [
+  `https://apis.data.go.kr/B551011/DataLabService/locgoRegnVisitrDDList?serviceKey=${KEY}&${C}&numOfRows=6&pageNo=1&startYmd=20251001&endYmd=20251001`,
+  `https://apis.data.go.kr/B551011/KorService2/searchFestival2?serviceKey=${KEY}&${C}&numOfRows=3&pageNo=1&eventStartDate=20250101&arrange=A`,
+]) { try { const r = await fetch(u); const t = await r.text(); console.log('시험', u.split('?')[0].split('/').pop(), r.status, t.slice(0, 1500)); } catch (e) { console.log('실패', e.message); } }
