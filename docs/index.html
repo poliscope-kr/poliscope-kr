@@ -680,7 +680,7 @@ let TREND=null;async function trendData(){if(TREND)return TREND;try{TREND=await 
 function lineChart(dates,series,unit){const W=340,H=150,pl=30,pr=8,pt=10,pb=22,vals=series.flatMap(s=>s[2]).filter(v=>v!=null),lo=Math.min(...vals),hi=Math.max(...vals),pad=(hi-lo)*.15||(Math.abs(hi)<5?.5:5),y0=lo>=0?Math.max(0,lo-pad):lo-pad,y1=hi<=100?Math.min(100,hi+pad):hi+pad;
  const X=i=>pl+(dates.length<2?0:i/(dates.length-1)*(W-pl-pr)),Y=v=>pt+(1-(v-y0)/(y1-y0))*(H-pt-pb);
  const path=a=>a.map((v,i)=>v==null?'':`${i&&a[i-1]!=null?'L':'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join('');
- const box=h('div',{class:'lchart'});box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="추이 그래프">`+[y0,(y0+y1)/2,y1].map(v=>`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-dasharray="3 3"/><text x="${pl-4}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)">${y1-y0<10?v.toFixed(1):Math.round(v)}</text>`).join('')
+ const box=h('div',{class:'lchart'});box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="추이 그래프">`+[y0,(y0+y1)/2,y1].map(v=>`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-dasharray="3 3"/><text x="${pl-4}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)">${y1-y0<10?v.toFixed(1):Math.abs(v)>=1e4?(v/1e4).toFixed(Math.abs(v)>=1e5?0:1)+'만':Math.round(v)}</text>`).join('')
   +series.map(([n,c,a])=>`<path d="${path(a)}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round"/>`+a.map((v,i)=>v==null?'':`<circle cx="${X(i)}" cy="${Y(v)}" r="${dates.length>30?0:3}" fill="${c}"/>`).join('')).join('')
   +`<text x="${pl}" y="${H-4}" font-size="10" fill="var(--muted)">${dates[0]||''}</text><text x="${W-pr}" y="${H-4}" font-size="10" text-anchor="end" fill="var(--muted)">${dates[dates.length-1]||''}</text></svg>`;
  return h('div',null,box,h('div',{class:'legend'},series.map(([n,c])=>h('span',null,h('i',{style:'background:'+c}),n))))}
@@ -1123,12 +1123,21 @@ function minBox(name){const L=(MIN?.projects||{})[name];if(!L?.length)return nul
   h('p',{class:'small muted',style:'margin:4px 0'},'예산결산특별위원회·국토교통위원회 회의록(국정감사 포함)에서 사업 이름이 나온 대목의 발언자입니다. 예산을 요청했는지, 문제를 지적했는지는 발췌와 회의록 원문으로 직접 확인하세요. 언급만으로 책임이 있다는 뜻은 아닙니다.'),
   ...ks.slice(0,12).map(k=>{const xs=ppl[k],m=xs[0].id&&M.find(q=>q.id===xs[0].id);return h('div',{class:'minr'},h('div',null,m?h('a',{href:'#m/'+m.id},h('b',null,m.name)):h('b',null,xs[0].who),' ',h('span',{class:'small muted'},(m?m.party+' · ':'')+xs[0].role+` · ${xs.length}회`)),
    ...xs.slice(0,2).map(x=>h('div',{class:'small'},h('span',{class:'muted'},`${x.d} ${x.c} `),h('q',null,x.s),' ',h('a',{href:safe(x.u),target:'_blank',rel:'noopener'},'회의록')))) }))}
+// 공항 실제 이용객(한국공항공사, 매월 자동 갱신)
+let AIR=null;
+function airBox(c){if(!c.air||!AIR?.years?.[c.air.n])return null;const Y=AIR.years[c.air.n],ys=Object.keys(Y).sort(),vals=ys.map(y=>Y[y]),best=ys.reduce((a,b)=>Y[b]>Y[a]?b:a),lm=AIR.lastMonth,k12=[];for(let i=0;i<12;i++){const d=new Date(+lm.slice(0,4),+lm.slice(4)-1-i,1);k12.push(`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}`)}
+ const l12=k12.reduce((t,k)=>t+((AIR.months[c.air.n]||{})[k]||0),0),man=v=>v>=1e4?(v/1e4).toFixed(1).replace(/\.0$/,'')+'만':v.toLocaleString('ko-KR');
+ return h('div',{class:'fsbox'},h('div',{class:'small'},h('b',null,'📈 실제 이용객 '),h('span',{class:'muted'},'(매월 자동 갱신)')),
+  lineChart(ys.map(y=>y.slice(2)),[[`${c.air.n}공항 연간 이용객(명)`,'var(--sky)',vals]]),
+  h('div',{class:'small'},`최근 12개월(${lm.slice(0,4)}.${lm.slice(4)}까지) ${man(l12)}명 · 가장 많았던 ${best}년 ${man(Y[best])}명`+(c.air.fc?` (당초 예측 연 ${man(c.air.fc)}명의 ${(Y[best]/c.air.fc*100).toFixed(0)}%)`:'')),
+  c.air.note?h('div',{class:'small muted'},c.air.note):null,h('div',{class:'small muted'},'자료: '+AIR.src))}
 function wcase(c,open){const [ic,cl]=WCAT[c.cat]||['•',''],row=(k,v)=>v&&v!=='–'?h('div',{class:'wrow'},h('span',{class:'muted'},k),h('span',null,v)):null;
  return h('details',{class:'wcase',id:'w-'+c.id,open:open||null},h('summary',null,h('span',{class:'wtt'},h('b',null,ic+' '+c.n),h('small',{class:'muted'},`${c.r} · ${cl} · ${c.per}`)),h('span',{class:'wcost tn'},c.cost!=='–'?c.cost:'')),
   h('p',{style:'margin:6px 0'},c.iss),
   h('div',{class:'wgrid'},row('계획',c.plan),row('실제',c.real),row('관계 기관',c.own),row('사업비',c.cost),row('지적한 곳',`${c.by} (${c.when.replaceAll('-','.')})`),row('지적 내용',c.find),row('지금은',c.now)),
   (c.fs?h('div',{class:'fsbox'},h('div',{class:'small'},h('b',null,'📐 타당성·수요예측: '),c.fs.kind),c.fs.bc!=null?bcBar(c.fs.bc,'B/C '+c.fs.bcT):null,h('div',{class:'small'},c.fs.text),h('div',{class:'small muted'},'출처: ',h('a',{href:safe(c.fs.src[1]),target:'_blank',rel:'noopener'},c.fs.src[0]))):h('div',{class:'small muted'},'📐 타당성 조사 결과: 공개 자료 확인 중')),
   timeline(c.tl),
+  airBox(c),
   minBox(c.n),
   c.won?h('div',null,h('div',{class:'small muted'},`💸 ${c.wonL} ${c.won>=10000?(c.won/10000).toFixed(1)+'조':c.won.toLocaleString('ko-KR')+'억'} 원이면`),wonFun(c.won)):null,
   c.counter?h('p',{class:'small',style:'margin:6px 0;padding:6px 8px;border-left:3px solid var(--sky);background:color-mix(in srgb,var(--sky) 8%,transparent)'},'⚖️ 다른 시각: '+c.counter):null,
@@ -1179,6 +1188,7 @@ function trial(c,box){const steps=[];const [ic]=WCAT[c.cat]||['•'];const tags=
  steps.push(['🔔 개정','사건 번호 '+(2026)+'-세금-'+c.id.toUpperCase().slice(0,6),h('div',null,h('b',{style:'font-size:20px'},ic+' '+c.n),h('div',{class:'small muted'},`${c.r} · ${c.per} · 관계 기관: ${c.own}`),h('p',{class:'small',style:'margin:6px 0 0'},'이 법정은 사람이 아니라 사업과 제도를 심리합니다.'))]);
  steps.push(['📋 문제 제기','공식 기관이 지적한 내용',h('div',null,h('p',{style:'margin:0'},c.iss),h('div',{class:'small muted'},`${c.by} · ${c.when.replaceAll('-','.')}: ${c.find}`))]);
  steps.push(['📊 증거 조사','숫자로 본 사실',h('div',{class:'wgrid'},...[['계획',c.plan],['실제',c.real],['사업비',c.cost],c.won?[c.wonL,eokT(c.won)+' 원 (국민 1인당 '+Math.round(c.won*1e8/5.1e7).toLocaleString('ko-KR')+'원)']:null].filter(x=>x&&x[1]&&x[1]!=='–').map(([k,v])=>h('div',{class:'wrow'},h('span',{class:'muted'},k),h('span',null,v))))]);
+ if(c.air&&AIR)steps.push(['📈 개통 뒤 실적','실제로 얼마나 이용했나',airBox(c)]);
  steps.push(['📐 타당성 조사','사업 전에 무엇을 예상했나',(c.fs?h('div',{class:'fsbox'},h('div',{class:'small'},h('b',null,'📐 타당성·수요예측: '),c.fs.kind),c.fs.bc!=null?bcBar(c.fs.bc,'B/C '+c.fs.bcT):null,h('div',{class:'small'},c.fs.text),h('div',{class:'small muted'},'출처: ',h('a',{href:safe(c.fs.src[1]),target:'_blank',rel:'noopener'},c.fs.src[0]))):h('div',{class:'small muted'},'📐 타당성 조사 결과: 공개 자료 확인 중'))]);
  steps.push(['🛡️ 반론','다른 시각',h('p',{style:'margin:0'},c.counter||'공식 반론 자료를 아직 찾지 못했습니다. 관계 기관의 해명이 있으면 제보해 주세요.')]);
  if((MIN?.projects||{})[c.n])steps.push(['🏛️ 국회 기록','국회 회의에서 이 사업이 나온 대목',minBox(c.n)]);
@@ -1197,7 +1207,7 @@ function court(id){const scene=courtScene(),pick=h('div',{class:'chips'}),room=h
  show(h('section',{class:'hero'},h('span',{class:'kick'},'가상 법정'),h('h1',null,'AI ',h('mark',null,'세금'),' 법정'),h('p',null,'예산 낭비로 지적된 사업을 법정에 세워 봅니다. 문제 제기 → 증거 → 반론 → 판결 순서로 따라가면, AI 재판부가 원인과 바로잡는 방법, 재발을 막는 방법을 정리합니다.')),
   h('div',{class:'sec'},h('p',{class:'small',style:'margin:0'},'⚠️ 가상 법정입니다. 실제 재판이나 법적 판단이 아니고, 사람이 아니라 사업과 제도를 심리합니다. 판결문은 공식 기관의 지적과 공개 자료를 바탕으로 정해진 규칙에 따라 만든 것입니다.')),
   scene,h('h2',null,'사건 고르기'),pick,room,h('h2',null,'🏛️ 종합 판결: 왜 자꾸 되풀이될까'),all,h('p',{class:'small'},h('a',{href:'#waste'},'← 세금은 어디로 샜나 (사례 지도)')),fix('[정정] AI 세금 법정'));
- Promise.all([wasteData(),MIN?MIN:fetch('data/minutes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([W,MN])=>{MIN=MN;const C=W.cases||[];let cur=C.find(c=>c.id===id)||C[0];
+ Promise.all([wasteData(),MIN?MIN:fetch('data/minutes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),AIR?AIR:fetch('data/airports.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([W,MN,AP])=>{MIN=MN;AIR=AP;const C=W.cases||[];let cur=C.find(c=>c.id===id)||C[0];
   const sel=c=>{cur=c;[...pick.children].forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===c.id)));room.replaceChildren(trial(c,scene));history.replaceState(null,'','#court/'+c.id)};
   pick.append(...C.map(c=>{const b=h('button',{class:'fchip',onclick:()=>sel(c)},(WCAT[c.cat]||['•'])[0]+' '+c.n);b.dataset.id=c.id;return b}));sel(cur);
   const tc={};C.forEach(c=>(c.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));const top=Object.entries(tc).sort((a,b)=>b[1]-a[1]);
@@ -1220,7 +1230,7 @@ function waste(){const box=h('div'),list=h('div'),nowBox=h('div'),fsBox=h('div')
    h('p',{class:'small',style:'margin:0 0 6px'},'의원이 그 사업 예산을 “확보했다”고 스스로 알린 공식 기록(보도자료·의정보고서·국회 회의록)이 확인되면 출처와 함께 덧붙입니다. 지역이 같다는 이유만으로 의원 이름을 연결하지는 않습니다. 한 사업에 여러 정부와 정당이 걸쳐 있는 경우가 많기 때문입니다.'),
    h('p',{class:'small',style:'margin:0'},h('a',{href:'https://github.com/poliscope-kr/poliscope-kr/issues/new?template=correction.yml&title='+encodeURIComponent('[예산 사례 제보] '),target:'_blank',rel:'noopener'},'공식 기록이 있는 사례·의원 기록 제보하기'),' · 이름이 오른 쪽의 반론도 같은 곳으로 받습니다.')),
   h('h2',null,'📚 새로 나온 공식 분석 보고서'),naboBox());
- Promise.all([wasteData(),fetch('data/fiscal.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),fetch('data/minutes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([W,F,MN])=>{FIS=F;MIN=MN;const C=W.cases||[];if(!C.length){box.append(h('p',{class:'muted'},'사례 자료를 불러오지 못했습니다.'));return}
+ Promise.all([wasteData(),fetch('data/fiscal.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),fetch('data/minutes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),fetch('data/airports.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([W,F,MN,AP])=>{FIS=F;MIN=MN;AIR=AP;const C=W.cases||[];if(!C.length){box.append(h('p',{class:'muted'},'사례 자료를 불러오지 못했습니다.'));return}
   const cnt=r=>C.filter(c=>c.r===r).length,ncnt=r=>(W.now||[]).filter(p=>p.r===r).length+(FIS?.items||[]).filter(f=>regOfName(f.n)===r).length,regs=[...new Set(C.map(c=>c.r))];
   const cats=h('div',{class:'chips'},[['','전체'],...Object.entries(WCAT).filter(([k])=>C.some(c=>c.cat===k)).map(([k,[i,l]])=>[k,i+' '+l])].map(([k,l],i)=>{const b=h('button',{class:'fchip','aria-pressed':String(!i),onclick:()=>{cat=k;[...cats.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw()}},l);return b}));
   const mapBox=h('div');box.append(h('div',{class:'sec'},h('b',null,'지역을 눌러 우리 동네 세금 체크'),h('div',{class:'small muted'},'숫자는 공식 지적 사례 수, ‘추진’은 지금 추진 중인 같은 유형 사업 수입니다.'),mapBox,cats));

@@ -22,6 +22,7 @@ for (let i = 23; i >= 0; i--) {
   const d = new Date(lastM.getFullYear(), lastM.getMonth() - i, 1), k = ym(d);
   for (const route of [0, 1]) { const rows = await get(k, k, route); for (const r of rows || []) add(months, r.Airport, k, Math.round(r.subpassenger || 0)); await wait(300); }
 }
-const last12 = Object.fromEntries(Object.entries(months).map(([a, m]) => [a, Object.entries(m).sort().slice(-12).reduce((t, [, v]) => t + v, 0)]));
+const keys12 = Array.from({ length: 12 }, (_, i) => ym(new Date(lastM.getFullYear(), lastM.getMonth() - i, 1)));
+const last12 = Object.fromEntries(Object.entries(months).map(([a, m]) => [a, keys12.reduce((t, k) => t + (m[k] || 0), 0)]));
 writeFileSync(`${OUT}/airports.json`, JSON.stringify({ updated: new Date().toISOString(), lastMonth: ym(lastM), years, months, last12, src: '한국공항공사 전국공항 수송실적통계(공공데이터포털)' }));
 console.log('공항', Object.keys(years).length, '최근 12개월', JSON.stringify(last12));
