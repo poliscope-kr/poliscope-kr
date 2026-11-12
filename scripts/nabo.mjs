@@ -27,7 +27,7 @@ for (const [k, name, id] of SETS) {
   } catch (e) { console.log(name, '실패:', e.message); }
   stat[k] = rows.length;
   for (const r of rows) {
-    const t = (r.SUBJECT || '').trim(), d = String(r.REG_DATE || '').slice(0, 10).replace(/\./g, '-');
+    const t = (r.SUBJECT || '').replace(/&middot;/g, '·').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim(), d = String(r.REG_DATE || '').slice(0, 10).replace(/\./g, '-');
     if (t) reports.push({ k, t, d, dep: r.DEPARTMENT_NAME || '', u: r.LINK_URL || '' });
   }
 }

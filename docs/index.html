@@ -1095,6 +1095,10 @@ function wcase(c,open){const [ic,cl]=WCAT[c.cat]||['•',''],row=(k,v)=>v&&v!=='
   h('div',{class:'chips'},(c.tags||[]).map(t=>h('span',{class:'chip'},WTAG[t]||t))),
   h('div',{class:'small'},'출처: ',...c.src.flatMap(([t,u],i)=>[i?' · ':'',h('a',{href:safe(u),target:'_blank',rel:'noopener'},t)])),
   fix('[정정] 예산 낭비 사례 '+c.n))}
+function naboBox(){const box=h('div',{class:'sec'});fetch('data/nabo.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(N=>{const R=N.reports||[];if(!R.length)throw 0;let k='';const list=h('div');
+ const tabs=h('div',{class:'chips'},[['','전체'],...Object.entries(N.sets).filter(([x])=>R.some(r=>r.k===x))].map(([v,l],i)=>{const b=h('button',{class:'fchip','aria-pressed':String(!i),onclick:()=>{k=v;[...tabs.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw()}},l);return b}));
+ const draw=()=>{list.textContent='';list.append(...R.filter(r=>!k||r.k===k).slice(0,12).map(r=>h(safe(r.u)?'a':'div',{class:'card',href:safe(r.u)||null,target:'_blank',rel:'noopener'},h('div',{class:'small'},r.t),h('div',{class:'small muted'},`${N.sets[r.k]} · ${r.d}${r.dep?' · '+r.dep:''}`))))};draw();
+ box.append(h('p',{class:'small',style:'margin:0'},'국회예산정책처가 정부 결산과 나라 사업을 점검해 낸 보고서입니다. 사업별로 “집행이 부진하다”, “성과 지표가 부실하다” 같은 지적이 담깁니다. 매일 자동으로 새 보고서를 확인합니다.'),tabs,list,h('p',{class:'small muted',style:'margin:0'},'자료: 열린국회정보 · 국회예산정책처'))}).catch(()=>box.append(h('p',{class:'small muted',style:'margin:0'},'보고서 목록을 수집하고 있습니다. 다음 자동 수집 뒤 나타납니다.')));return box}
 function waste(){const box=h('div'),list=h('div'),nowBox=h('div');let reg='',cat='';
  show(h('section',{class:'hero'},h('span',{class:'kick'},'공식 지적 사례'),h('h1',null,'세금은 ',h('mark',null,'어디로'),' 샜나'),h('p',null,'감사원·법원·정부 점검·지자체 감사 등 공식 기관이 문제를 지적했거나, 계획과 실제 결과가 공개 자료로 크게 어긋난 사업을 모았습니다. 그리고 지금 추진 중인 비슷한 사업을 같은 질문으로 비교해 봅니다.')),
   h('div',{class:'sec'},h('p',{class:'small',style:'margin:0'},'⚠️ 이 목록은 “누가 나쁘다”는 판정이 아닙니다. 기관이 지적한 내용과 숫자를 출처와 함께 옮겼고, 반론이 있는 사례는 함께 적었습니다. 사례는 계속 추가합니다.')),box,list,
@@ -1103,7 +1107,7 @@ function waste(){const box=h('div'),list=h('div'),nowBox=h('div');let reg='',cat
    h('p',{style:'margin:0 0 6px'},'국회의원은 예산을 직접 쓰거나 공사를 발주하지 않습니다. 사업을 정하고 집행한 곳은 정부 부처·지자체·공기업이라, 각 사례에 ‘관계 기관’으로 적었습니다.'),
    h('p',{class:'small',style:'margin:0 0 6px'},'의원이 그 사업 예산을 “확보했다”고 스스로 알린 공식 기록(보도자료·의정보고서·국회 회의록)이 확인되면 출처와 함께 덧붙입니다. 지역이 같다는 이유만으로 의원 이름을 연결하지는 않습니다. 한 사업에 여러 정부와 정당이 걸쳐 있는 경우가 많기 때문입니다.'),
    h('p',{class:'small',style:'margin:0'},h('a',{href:'https://github.com/poliscope-kr/poliscope-kr/issues/new?template=correction.yml&title='+encodeURIComponent('[예산 사례 제보] '),target:'_blank',rel:'noopener'},'공식 기록이 있는 사례·의원 기록 제보하기'),' · 이름이 오른 쪽의 반론도 같은 곳으로 받습니다.')),
-  h('p',{class:'small muted'},'국회예산정책처·감사원 공개 자료를 자동으로 모으는 기능은 준비 중입니다.'));
+  h('h2',null,'📚 새로 나온 공식 분석 보고서'),naboBox());
  wasteData().then(W=>{const C=W.cases||[];if(!C.length){box.append(h('p',{class:'muted'},'사례 자료를 불러오지 못했습니다.'));return}
   const cnt=r=>C.filter(c=>c.r===r).length,regs=[...new Set(C.map(c=>c.r))];
   const cats=h('div',{class:'chips'},[['','전체'],...Object.entries(WCAT).filter(([k])=>C.some(c=>c.cat===k)).map(([k,[i,l]])=>[k,i+' '+l])].map(([k,l],i)=>{const b=h('button',{class:'fchip','aria-pressed':String(!i),onclick:()=>{cat=k;[...cats.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw()}},l);return b}));
