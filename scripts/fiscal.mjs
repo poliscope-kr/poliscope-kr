@@ -44,16 +44,16 @@ for (const [g, , re] of GROUPS) {
 }
 items.sort((a, b) => b.a - a.a);
 // 예산 이상 신호: 전년 대비 크게 늘거나 줄어든 사업, 새로 생긴 큰 사업 (회계 간 이동·이자·예비비 등은 뺀다)
-const SKIP = /전출|전입|내부거래|예비비|이자|상환|국채|예탁|여유자금|기본경비|인건비|운영비|차입|보전|공자기금|지방교부|교부금|정산/;
-const key = r => `${r.OFFC_NM}|${r.SACTV_NM}`, prevMap = {};
-for (const r of byYear[P] || []) { const k = key(r); prevMap[k] = (prevMap[k] || 0) + amt(r); }
+const SKIP = /예치|유가증권|주식|유동화증권|비축|여유|전출|전입|내부거래|예비비|이자|상환|국채|예탁|여유자금|기본경비|인건비|운영비|차입|보전|공자기금|지방교부|교부금|정산/;
+const kn = n => String(n || '').replace(/\([^)]*\)/g, '').replace(/[\s·ㆍ\-]/g, ''), key = r => kn(r.SACTV_NM), prevMap = {}, prevMeta = {};
+for (const r of byYear[P] || []) { if (SKIP.test(`${r.ACTV_NM} ${r.SACTV_NM}`)) continue; const k = key(r); prevMap[k] = (prevMap[k] || 0) + amt(r); prevMeta[k] = { n: r.SACTV_NM, o: r.OFFC_NM }; }
 const curMap = {}, meta = {};
 for (const r of byYear[Y] || []) { if (SKIP.test(`${r.ACTV_NM} ${r.SACTV_NM}`)) continue; const k = key(r); curMap[k] = (curMap[k] || 0) + amt(r); meta[k] = { n: r.SACTV_NM, o: r.OFFC_NM, f: r.FLD_NM }; }
 const rows = Object.entries(curMap).map(([k, a]) => ({ ...meta[k], a, p: prevMap[k] ?? null }));
 const up = rows.filter(r => r.p > 0 && r.a - r.p >= 300 && r.a / r.p >= 1.5).sort((a, b) => (b.a - b.p) - (a.a - a.p)).slice(0, 15);
 const fresh = rows.filter(r => r.p == null && r.a >= 300).sort((a, b) => b.a - a.a).slice(0, 15);
 const down = rows.filter(r => r.p >= 300 && r.a <= r.p * 0.5).sort((a, b) => (a.a - a.p) - (b.a - b.p)).slice(0, 15);
-const cut = Object.entries(prevMap).filter(([k, v]) => v >= 500 && curMap[k] == null && !SKIP.test(k)).map(([k, v]) => ({ n: k.split('|')[1], o: k.split('|')[0], a: 0, p: v })).sort((a, b) => b.p - a.p).slice(0, 10);
+const cut = Object.entries(prevMap).filter(([k, v]) => v >= 500 && curMap[k] == null).map(([k, v]) => ({ ...prevMeta[k], a: 0, p: v })).sort((a, b) => b.p - a.p).slice(0, 10);
 const alerts = { up, fresh, down, cut, rule: '늘어남: 300억 원 이상·1.5배 이상 증가 / 새로 생김: 전년에 없던 300억 원 이상 / 줄어듦: 300억 원 이상이던 사업이 절반 이하로' };
 console.log('이상 신호', up.length, fresh.length, down.length, cut.length);
 
