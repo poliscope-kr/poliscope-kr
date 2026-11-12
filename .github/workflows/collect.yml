@@ -75,6 +75,13 @@ jobs:
         env:
           ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
         run: node scripts/nabo.mjs
+      - name: 분야별 지표 수집
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          KOSIS_KEY: ${{ secrets.KOSIS_KEY }}
+        run: node scripts/indicators.mjs
       - name: 분야별 집행 수집
         if: always()
         continue-on-error: true

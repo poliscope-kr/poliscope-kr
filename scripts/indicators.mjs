@@ -7,7 +7,7 @@ const SPEC = [
  { f: ['사회복지'], n: '합계출산율', u: '명', better: 'up', t: 'INH_1B81A17', L: '', pick: x => x.C1_NM === '전국' && /합계출산율/.test(x.ITM_NM) },
  { f: ['산업·중소기업및에너지', '일반·지방행정'], n: '고용률(15세 이상)', u: '%', better: 'up', t: 'INH_1DA7014S_03', L: '&objL2=ALL', pick: x => x.C1_NM === '계' && x.C2_NM === '계' },
  { f: ['교통및물류', '공공질서및안전'], n: '교통사고 사망자 수', u: '명', better: 'down', t: 'DT_2KAAD31', L: '', pick: x => x.C1_NM === '대한민국' },
- { f: ['보건'], n: '기대수명', u: '세', better: 'up', t: 'DT_2KAA209', L: '&objL2=ALL', pick: x => x.C1_NM === '대한민국' && (!x.C2_NM || /전체|계|합|Both|양성/.test(x.C2_NM)) },
+ { f: ['보건'], n: '기대수명(UN 추정 포함)', u: '세', better: 'up', t: 'DT_2KAA209', L: '&objL2=ALL', pick: x => x.C1_NM === '대한민국' && (!x.C2_NM || /전체|계|합|Both|양성/.test(x.C2_NM)) },
  { f: ['환경'], n: '초미세먼지(PM2.5) 연평균 노출 농도', u: '㎍/㎥', better: 'down', t: 'DT_2UNS0109', L: '&objL2=ALL', pick: x => x.C1_NM === '대한민국' && x.C2_NM === '지역합계' },
  { f: ['일반·지방행정'], n: '1인당 국민총소득', u: '달러', better: 'up', t: 'DT_2AS017', L: '', pick: x => x.C1_NM === '대한민국' },
 ];
