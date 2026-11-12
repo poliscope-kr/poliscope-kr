@@ -4,6 +4,11 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 const KEY = process.env.ASSEMBLY_API_KEY, BASE = 'https://open.assembly.go.kr/portal/openapi', OUT = 'docs/data';
 const LIMIT = Number(process.env.LIMIT || 0), BUDGET = Date.now() + Number(process.env.MINUTES_MS || 50 * 60e3);
+if (process.env.PROBE_URL) {
+  const buf = Buffer.from(await (await fetch(process.env.PROBE_URL, { headers: { 'User-Agent': 'Mozilla/5.0' } })).arrayBuffer()); writeFileSync('/tmp/p.pdf', buf);
+  for (const mode of [[], ['-raw'], ['-layout']]) { const t = execFileSync('pdftotext', [...mode, '/tmp/p.pdf', '-'], { maxBuffer: 1 << 28 }).toString(); const i = t.indexOf('무안'); console.log('=== MODE', mode.join(' ') || 'default', '\n' + t.slice(Math.max(0, i - 600), i + 400)); }
+  process.exit(0);
+}
 if (!KEY) { console.log('키가 없어 건너뜁니다.'); process.exit(0); }
 const wait = ms => new Promise(r => setTimeout(r, ms));
 async function api(id, params, p = 1) {

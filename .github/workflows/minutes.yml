@@ -4,6 +4,8 @@ on:
     inputs:
       limit:
         default: '0'
+      probe:
+        default: ''
   schedule:
     - cron: '23 19 * * 0'
 permissions:
@@ -24,6 +26,7 @@ jobs:
         env:
           ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
           LIMIT: ${{ inputs.limit || '0' }}
+          PROBE_URL: ${{ inputs.probe }}
           MINUTES_MS: '2700000'
         run: node scripts/minutes.mjs
       - name: 저장
