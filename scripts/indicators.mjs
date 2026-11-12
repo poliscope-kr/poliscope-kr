@@ -21,6 +21,7 @@ for (const s of SPEC) {
     const by = {}; rows.forEach(x => { by[x.PRD_DE] = by[x.PRD_DE] ?? Number(x.DT); });
     const ser = Object.entries(by).sort().map(([y, v]) => [y, Math.round(v * 100) / 100]);
     console.log(s.n, ser.length, JSON.stringify(ser.slice(-4)), rows[0] ? `${rows[0].ITM_NM}/${rows[0].C1_NM}/${rows[0].C2_NM || ''}` : '');
+    if (!ser.length) console.log('  예시', JSON.stringify(j.filter(x => x.C1_NM === '대한민국').slice(0, 3).map(x => [x.ITM_NM, x.C2_NM, x.C3_NM, x.PRD_DE, x.DT])), j.length, j[0]?.C1_NM);
     if (ser.length) out.push({ f: s.f, n: s.n, u: s.u, better: s.better, tbl: `${j[0].TBL_NM}(${s.t})`, s: ser.slice(-12) });
   } catch (e) { console.log(s.n, e.message); }
 }
