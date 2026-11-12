@@ -75,6 +75,13 @@ jobs:
         env:
           ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
         run: node scripts/nabo.mjs
+      - name: 나라 예산 수집
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          OPENFISCAL_KEY: ${{ secrets.OPENFISCAL_KEY }}
+        run: node scripts/budget.mjs
       - name: 열린재정 사업 수집
         if: always()
         continue-on-error: true
