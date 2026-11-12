@@ -52,7 +52,7 @@ for (const c of todo) {
     if (n <= 2) console.log('다운로드', c.u, r.status, r.headers.get('content-type'), buf.length, buf.slice(0, 5).toString());
     if (buf.slice(0, 4).toString() !== '%PDF') { cache.done[c.id] = 'notpdf'; continue; }
     writeFileSync('/tmp/m.pdf', buf);
-    const txt = execFileSync('pdftotext', ['-layout', '/tmp/m.pdf', '-'], { maxBuffer: 1 << 28 }).toString();
+    const txt = execFileSync('pdftotext', ['/tmp/m.pdf', '-'], { maxBuffer: 1 << 28 }).toString();
     const lines = txt.split('\n'); let who = null, role = null; const seen = new Set();
     for (let i = 0; i < lines.length; i++) {
       const L = lines[i].trim(), m = L.match(SPK);
@@ -62,7 +62,10 @@ for (const c of todo) {
       for (const t of TARGETS) {
         if (!t.a.some(a => nl.includes(a))) continue;
         const key = who + '|' + t.n; if (seen.has(key)) continue; seen.add(key);
-        const snip = lines.slice(Math.max(0, i - 1), i + 2).map(s => s.trim()).join(' ').replace(/^[○◯]\s*\S+\s*(위원장|위원|의원)\s*/, '').replace(/\s+/g, ' ').slice(0, 180);
+        const ctx = lines.slice(Math.max(0, i - 2), i + 3).map(s => s.trim()).join(' ').replace(/[○◯]\s*[가-힣]{2,4}\s*(위원장|위원|의원)\s*/g, '').replace(/\s+/g, ' ');
+        const pos = Math.max(0, t.a.map(a => ctx.replace(/\s/g, '').indexOf(a)).find(x => x >= 0) ?? 0);
+        let cpos = 0, cnt = 0; for (; cpos < ctx.length && cnt < pos; cpos++) if (!/\s/.test(ctx[cpos])) cnt++;
+        const snip = (cpos > 70 ? '…' : '') + ctx.slice(Math.max(0, cpos - 70), cpos + 110) + (cpos + 110 < ctx.length ? '…' : '');
         cache.hits.push({ p: t.n, who, role, ids: byName[who] || [], d: c.d, c: c.c, conf: c.id, u: c.u, s: snip });
       }
     }
