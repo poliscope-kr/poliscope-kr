@@ -1,0 +1,28 @@
+name: 축제 효과 수집
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 21 10 * *'
+permissions:
+  contents: write
+jobs:
+  festeffect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: 수집
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+        run: node scripts/festeffect.mjs
+      - name: 저장
+        run: |
+          git config user.name "poliscope-bot"
+          git config user.email "poliscope-bot@users.noreply.github.com"
+          git add docs/data/festeffect.json data/visitors-*.json
+          git diff --cached --quiet || git commit -m "축제 효과 갱신 $(date -u +%F)"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && exit 0; git rebase --abort 2>/dev/null; sleep 15; done
+          exit 1
