@@ -12,4 +12,5 @@ jobs:
           node-version: '20'
       - env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          KOSIS_KEY: ${{ secrets.KOSIS_KEY }}
         run: node scripts/datago-probe.mjs
