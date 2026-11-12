@@ -68,6 +68,13 @@ jobs:
         if: always()
         continue-on-error: true
         run: node scripts/trend.mjs
+      - name: 예산정책처 보고서 수집
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
+        run: node scripts/nabo.mjs
       - name: 저장
         if: always()
         run: |

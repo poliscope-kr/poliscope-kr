@@ -1,0 +1,26 @@
+name: 예산정책처 보고서 수집
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  nabo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: 수집
+        env:
+          ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
+        run: node scripts/nabo.mjs
+      - name: 저장
+        run: |
+          git config user.name "poliscope-bot"
+          git config user.email "poliscope-bot@users.noreply.github.com"
+          git add docs/data/nabo.json
+          git diff --cached --quiet || git commit -m "예산정책처 보고서 갱신 $(date -u +%F)"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && exit 0; git rebase --abort 2>/dev/null; sleep 15; done
+          exit 1
