@@ -57,13 +57,13 @@ for (const c of todo) {
     if (n <= 2) console.log('다운로드', c.u, r.status, r.headers.get('content-type'), buf.length, buf.slice(0, 5).toString());
     if (buf.slice(0, 4).toString() !== '%PDF') { cache.done[c.id] = 'notpdf'; continue; }
     writeFileSync('/tmp/m.pdf', buf);
-    const txt = execFileSync('pdftotext', ['/tmp/m.pdf', '-'], { maxBuffer: 1 << 28 }).toString();
+    const txt = execFileSync('pdftotext', ['-raw', '/tmp/m.pdf', '-'], { maxBuffer: 1 << 28 }).toString();
     const lines = txt.split('\n'); let who = null, role = null; const seen = new Set();
     for (let i = 0; i < lines.length; i++) {
       const L = lines[i].trim(), m = L.match(SPK);
-      if (m) { who = m[1]; role = m[2]; } else if (/^[○◯]/.test(L)) { who = null; }
+      if (m && !/전문$|^전문|^수석/.test(m[1])) { who = m[1]; role = m[2]; } else if (/^[○◯]/.test(L)) { who = null; }
       if (!who) continue;
-      const nl = norm(L);
+      const nl = norm(L + (lines[i + 1] && !/^[○◯]/.test(lines[i + 1].trim()) ? lines[i + 1] : ''));
       for (const t of TARGETS) {
         if (!t.a.some(a => nl.includes(a))) continue;
         const key = who + '|' + t.n; if (seen.has(key)) continue; seen.add(key);
