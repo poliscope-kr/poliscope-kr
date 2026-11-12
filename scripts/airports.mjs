@@ -1,5 +1,5 @@
 // 한국공항공사 전국공항 수송실적(공공데이터포털): 공항별 연도·월별 여객 수.
-// '세금은 어디로 샜나'의 공항 사례에서 "예측 대비 실제"를 자동으로 새로 고친다.
+// '세금은 어디에 사용되었나'의 공항 사례에서 "예측 대비 실제"를 자동으로 새로 고친다.
 import { writeFileSync } from 'node:fs';
 const KEY = (process.env.DATA_GO_KR_KEY || '').trim(), OUT = 'docs/data';
 if (KEY.length < 20) { console.log('DATA_GO_KR_KEY가 없어 건너뜁니다.'); process.exit(0); }

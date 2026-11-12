@@ -1,4 +1,4 @@
-// 국회 회의록(예결위·국토교통위)에서 '세금은 어디로 샜나'의 사업 이름이 나온 곳을 찾아
+// 국회 회의록(예결위·국토교통위)에서 '세금은 어디에 사용되었나'의 사업 이름이 나온 곳을 찾아
 // 그 대목에서 발언한 의원과 회의록 링크를 모은다. 발언의 옳고 그름은 판단하지 않는다.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
