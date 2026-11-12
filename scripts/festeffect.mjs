@@ -57,7 +57,7 @@ const byName = {}; for (const g of FE.govs) byName[g.s + '|' + g.n] = g;
 // 시 아래 일반구(수원시 팔달구 등)는 시로, 제주시·서귀포시는 제주특별자치도로 묶는다(예산이 그 단위로 편성됨)
 const merged = {};
 for (const [code, o] of Object.entries(out)) {
-  const sd = SIDO[code.slice(0, 2)], nm = sd === '제주' ? '제주 본청(광역)' : o.n.includes(' ') ? o.n.split(' ')[0] : o.n, k = sd + '|' + nm;
+  const sd = code.startsWith('12') ? (/^(동구|서구|남구|북구|광산구)$/.test(o.n) ? '광주' : '전남') : SIDO[code.slice(0, 2)], nm = sd === '제주' ? '제주 본청(광역)' : o.n.includes(' ') ? o.n.split(' ')[0] : o.n, k = sd + '|' + nm;
   (merged[k] = merged[k] || { code, sd, n: nm, f: [] }).f.push(...o.f);
 }
 for (const [k, o] of Object.entries(merged)) {
