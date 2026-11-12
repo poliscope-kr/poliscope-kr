@@ -1,0 +1,37 @@
+name: 회의록 사업 언급 수집
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        default: '0'
+  schedule:
+    - cron: '23 19 * * 0'
+permissions:
+  contents: write
+concurrency:
+  group: minutes
+jobs:
+  minutes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: which pdftotext || (sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils)
+      - name: 수집
+        env:
+          ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
+          LIMIT: ${{ inputs.limit || '0' }}
+          MINUTES_MS: '2700000'
+        run: node scripts/minutes.mjs
+      - name: 저장
+        if: always()
+        run: |
+          git config user.name "poliscope-bot"
+          git config user.email "poliscope-bot@users.noreply.github.com"
+          git add docs/data/minutes.json data/minutes-cache.json
+          git diff --cached --quiet || git commit -m "회의록 사업 언급 갱신 $(date -u +%F)"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && exit 0; git rebase --abort 2>/dev/null; sleep 15; done
+          exit 1
