@@ -13,7 +13,7 @@ const SPEC = [
 ];
 const now = new Date().getFullYear(), out = [];
 for (const s of SPEC) {
-  const u = `https://kosis.kr/openapi/Param/statisticsParameterData.do?method=getList&apiKey=${encodeURIComponent(K)}&itmId=ALL&objL1=ALL${s.L}&format=json&jsonVD=Y&prdSe=Y&newEstPrdCnt=14&orgId=101&tblId=${s.t}`;
+  const u = `https://kosis.kr/openapi/Param/statisticsParameterData.do?method=getList&apiKey=${encodeURIComponent(K)}&itmId=ALL&objL1=ALL${s.L}&format=json&jsonVD=Y&prdSe=Y&startPrdDe=${now - 13}&endPrdDe=${now - 1}&orgId=101&tblId=${s.t}`;
   try {
     const j = await (await fetch(u, { signal: AbortSignal.timeout(60000) })).json();
     if (!Array.isArray(j)) { console.log(s.n, JSON.stringify(j).slice(0, 150)); continue; }
