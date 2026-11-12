@@ -60,6 +60,10 @@ jobs:
           NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
         run: node scripts/buzz.mjs
+      - name: 추이 기록
+        if: always()
+        continue-on-error: true
+        run: node scripts/trend.mjs
       - name: 저장
         if: always()
         run: |
