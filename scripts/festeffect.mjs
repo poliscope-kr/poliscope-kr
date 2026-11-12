@@ -54,8 +54,14 @@ for (const f of fest) {
 const FE = JSON.parse(readFileSync('docs/data/festival.json', 'utf8')), res = [];
 const SIDO = { 11: '서울', 26: '부산', 27: '대구', 28: '인천', 29: '광주', 30: '대전', 31: '울산', 36: '세종', 41: '경기', 42: '강원', 51: '강원', 43: '충북', 44: '충남', 45: '전북', 52: '전북', 46: '전남', 47: '경북', 48: '경남', 50: '제주' };
 const byName = {}; for (const g of FE.govs) byName[g.s + '|' + g.n] = g;
+// 시 아래 일반구(수원시 팔달구 등)는 시로, 제주시·서귀포시는 제주특별자치도로 묶는다(예산이 그 단위로 편성됨)
+const merged = {};
 for (const [code, o] of Object.entries(out)) {
-  const sd = SIDO[code.slice(0, 2)], g = byName[sd + '|' + o.n] || byName[sd + '|' + o.n.replace(/\s/g, '')]; if (!g || !g.v[Y]) { console.log('예산 연결 안 됨', code, sd, o.n); continue; }
+  const sd = SIDO[code.slice(0, 2)], nm = sd === '제주' ? '제주 본청(광역)' : o.n.includes(' ') ? o.n.split(' ')[0] : o.n, k = sd + '|' + nm;
+  (merged[k] = merged[k] || { code, sd, n: nm, f: [] }).f.push(...o.f);
+}
+for (const [k, o] of Object.entries(merged)) {
+  const code = o.code, g = byName[k]; if (!g || !g.v[Y]) { console.log('예산 연결 안 됨', k); continue; }
   const up = o.f.reduce((t, x) => t + Math.max(0, x.up), 0);
   res.push({ cd: code, n: g.n, s: g.s, bud: g.v[Y][0], nf: o.f.length, up, per: up > 0 ? Math.round(g.v[Y][0] * 1e8 / up) : null, top: o.f.sort((a, b) => b.up - a.up).slice(0, 5) });
 }
