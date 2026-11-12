@@ -37,7 +37,9 @@ ol.mini{list-style:none;margin:8px 0 0;padding:0;font-size:14px}ol.mini li{paddi
 .split{height:6px;background:var(--hi);border-radius:3px;overflow:hidden;margin:7px 0 4px}.split i{display:block;height:100%;background:var(--ac)}
 .fchip{font:500 12.5px var(--font);padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted)}.fchip[aria-pressed="true"]{background:var(--ac);border-color:var(--ac);color:var(--surface)}
 ol.rank li{grid-template-columns:34px minmax(0,1fr) auto}
-.lawgrid b{display:block;font-size:18px}.buzz{display:flex;align-items:flex-end;gap:3px;height:120px}.bz{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px}.bz span{font-size:11px;line-height:1}.bz i{display:block;width:100%;background:var(--ac);border-radius:3px 3px 0 0;max-height:calc(100% - 15px)}.bz.on i{background:var(--hi)}.tl{list-style:none;margin:8px 0 0;padding:0 0 0 16px;border-left:2px solid var(--ac);display:flex;flex-direction:column;gap:8px}.tl li{position:relative}.tl li::before{content:"";position:absolute;left:-22px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--ac)}
+.lawgrid b{display:block;font-size:18px}.buzz{display:flex;align-items:flex-end;gap:3px;height:120px}.bz{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px}.bz span{font-size:11px;line-height:1}.bz i{display:block;width:100%;background:var(--ac);border-radius:3px 3px 0 0;max-height:calc(100% - 15px)}.bz.on i{background:var(--hi)}.minr{padding:6px 0;border-bottom:1px solid var(--line)}.minr q{font-style:normal;color:var(--fg)}.minr q::before{content:'“'}.minr q::after{content:'”'}
+.alr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}.alr:last-child{border:0}.alr>div:first-child{flex:1;min-width:0}
+.tl{list-style:none;margin:8px 0 0;padding:0 0 0 16px;border-left:2px solid var(--ac);display:flex;flex-direction:column;gap:8px}.tl li{position:relative}.tl li::before{content:"";position:absolute;left:-22px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--ac)}
 .votebar.thin{height:7px;margin-top:3px}
 .q{font-size:18px;font-weight:700;margin-top:14px;line-height:1.45;overflow-wrap:anywhere}
 .hbadge{display:inline-block;font-size:12px;font-weight:700;background:var(--ac);color:var(--surface);border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:1px}
@@ -99,6 +101,7 @@ button.hb{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-
 .cprog{display:flex;gap:4px;flex-wrap:wrap}.cprog span{font-size:11.5px;padding:3px 8px;border-radius:999px;background:var(--line);color:var(--muted)}.cprog span.on{background:var(--ac);color:#fff}.cbody{min-height:150px;display:flex;flex-direction:column;gap:6px}
 .verdict{position:relative;border:2px solid color-mix(in srgb,#8a5a2b 60%,transparent);border-radius:12px;padding:12px;background:color-mix(in srgb,#ffe7b0 12%,transparent)}.stamp{position:absolute;top:8px;right:8px;border:3px solid var(--hi);color:var(--hi);font-weight:800;padding:2px 8px;border-radius:6px;transform:rotate(8deg);font-size:13px;animation:st .4s ease}@keyframes st{0%{transform:scale(2.4) rotate(8deg);opacity:0}100%{transform:scale(1) rotate(8deg);opacity:1}}
 .reform{border-left:3px solid var(--vio);padding:4px 10px;margin:4px 0}@media (prefers-reduced-motion:reduce){.gavel.hit,.stamp{animation:none}}
+.tl{list-style:none;margin:6px 0;padding:0 0 0 14px;border-left:2px solid var(--line)}.tl li{position:relative;padding:3px 0 6px 8px;font-size:13.5px;display:flex;flex-direction:column}.tl li::before{content:'';position:absolute;left:-20px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--c)}.tld{font-size:11.5px;color:var(--muted);font-weight:700}
 .fsbox{border:1px dashed var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;display:flex;flex-direction:column;gap:4px}
 .rgn{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}.rgn div{background:color-mix(in srgb,var(--teal) 10%,transparent);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column}.rgn b{font-size:24px}.rgn small{color:var(--muted);font-size:11px}
 .bcb{display:flex;align-items:center;gap:8px}.bct{position:relative;flex:1;height:12px;border-radius:6px;background:var(--line)}.bct i{display:block;height:100%;border-radius:6px}.bc1{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--fg)}.bcb b{min-width:86px;text-align:right;font-size:13px}.fsr{display:flex;flex-direction:column;gap:2px}.wfun{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;margin:2px 0 6px}
@@ -1110,11 +1113,23 @@ function regionCanvas(r,cs,ns,fs){const W=1080,H=1350,{cv,c:x}=canvasBase(W,H,`$
  const sec=(t,rows)=>{if(!rows.length)return;x.fillStyle='#ffcf3f';x.font=`36px ${DISP}`;x.fillText(t,70,y);y+=56;x.fillStyle='#fff';x.font=`32px ${FONT}`;rows.slice(0,4).forEach(t=>{y=wrapText(x,'· '+t,70,y,W-140,42,1)+8});y+=30};
  sec(`공식 지적 사례 ${cs.length}건`,cs.map(c=>c.n));sec(`추진 중인 비슷한 사업 ${ns.length}건`,ns.map(p=>p.n+(p.fs?` (B/C ${p.fs.bcT})`:'')));sec(`내년 나라 예산 건설 사업 ${fs.length}건`,fs.map(f=>`${f.n} ${eokT(f.a)} 원`));
  canvasFoot(x,W,H,'감사원·법원 등 공식 지적과 기획재정부 열린재정 자료 기준. 예산이 많다고 낭비라는 뜻은 아닙니다.');return cv}
+const TLI={plan:['📐','var(--sky)'],money:['💰','var(--hi)'],build:['🏗️','var(--vio)'],open:['🚩','var(--teal)'],check:['🔍','var(--ac)'],court:['⚖️','var(--bad)']};
+function timeline(tl){if(!tl?.length)return null;return h('details',{class:'tlw'},h('summary',{class:'small'},`⏱️ 사업의 일생 보기 (${tl.length}단계)`),h('ol',{class:'tl'},tl.map(([d,t,k])=>{const [ic,col]=TLI[k]||['•','var(--muted)'];return h('li',{style:'--c:'+col},h('span',{class:'tld'},d),h('span',null,ic+' '+t))})))}
+// 국회 회의록에서 이 사업을 언급한 의원
+let MIN=null;
+function minBox(name){const L=(MIN?.projects||{})[name];if(!L?.length)return null;
+ const ppl={};L.forEach(x=>{const k=x.id||x.who;(ppl[k]=ppl[k]||[]).push(x)});const ks=Object.keys(ppl);
+ return h('details',{class:'tlw'},h('summary',{class:'small'},`🏛️ 국회 회의에서 이 사업을 언급한 의원 ${ks.length}명 · ${L.length}회`),
+  h('p',{class:'small muted',style:'margin:4px 0'},'예산결산특별위원회·국토교통위원회 회의록(국정감사 포함)에서 사업 이름이 나온 대목의 발언자입니다. 예산을 요청했는지, 문제를 지적했는지는 발췌와 회의록 원문으로 직접 확인하세요. 언급만으로 책임이 있다는 뜻은 아닙니다.'),
+  ...ks.slice(0,12).map(k=>{const xs=ppl[k],m=xs[0].id&&M.find(q=>q.id===xs[0].id);return h('div',{class:'minr'},h('div',null,m?h('a',{href:'#m/'+m.id},h('b',null,m.name)):h('b',null,xs[0].who),' ',h('span',{class:'small muted'},(m?m.party+' · ':'')+xs[0].role+` · ${xs.length}회`)),
+   ...xs.slice(0,2).map(x=>h('div',{class:'small'},h('span',{class:'muted'},`${x.d} ${x.c} `),h('q',null,x.s),' ',h('a',{href:safe(x.u),target:'_blank',rel:'noopener'},'회의록')))) }))}
 function wcase(c,open){const [ic,cl]=WCAT[c.cat]||['•',''],row=(k,v)=>v&&v!=='–'?h('div',{class:'wrow'},h('span',{class:'muted'},k),h('span',null,v)):null;
  return h('details',{class:'wcase',id:'w-'+c.id,open:open||null},h('summary',null,h('span',{class:'wtt'},h('b',null,ic+' '+c.n),h('small',{class:'muted'},`${c.r} · ${cl} · ${c.per}`)),h('span',{class:'wcost tn'},c.cost!=='–'?c.cost:'')),
   h('p',{style:'margin:6px 0'},c.iss),
   h('div',{class:'wgrid'},row('계획',c.plan),row('실제',c.real),row('관계 기관',c.own),row('사업비',c.cost),row('지적한 곳',`${c.by} (${c.when.replaceAll('-','.')})`),row('지적 내용',c.find),row('지금은',c.now)),
   (c.fs?h('div',{class:'fsbox'},h('div',{class:'small'},h('b',null,'📐 타당성·수요예측: '),c.fs.kind),c.fs.bc!=null?bcBar(c.fs.bc,'B/C '+c.fs.bcT):null,h('div',{class:'small'},c.fs.text),h('div',{class:'small muted'},'출처: ',h('a',{href:safe(c.fs.src[1]),target:'_blank',rel:'noopener'},c.fs.src[0]))):h('div',{class:'small muted'},'📐 타당성 조사 결과: 공개 자료 확인 중')),
+  timeline(c.tl),
+  minBox(c.n),
   c.won?h('div',null,h('div',{class:'small muted'},`💸 ${c.wonL} ${c.won>=10000?(c.won/10000).toFixed(1)+'조':c.won.toLocaleString('ko-KR')+'억'} 원이면`),wonFun(c.won)):null,
   c.counter?h('p',{class:'small',style:'margin:6px 0;padding:6px 8px;border-left:3px solid var(--sky);background:color-mix(in srgb,var(--sky) 8%,transparent)'},'⚖️ 다른 시각: '+c.counter):null,
   h('div',{class:'chips'},(c.tags||[]).map(t=>h('span',{class:'chip'},WTAG[t]||t))),
@@ -1166,6 +1181,7 @@ function trial(c,box){const steps=[];const [ic]=WCAT[c.cat]||['•'];const tags=
  steps.push(['📊 증거 조사','숫자로 본 사실',h('div',{class:'wgrid'},...[['계획',c.plan],['실제',c.real],['사업비',c.cost],c.won?[c.wonL,eokT(c.won)+' 원 (국민 1인당 '+Math.round(c.won*1e8/5.1e7).toLocaleString('ko-KR')+'원)']:null].filter(x=>x&&x[1]&&x[1]!=='–').map(([k,v])=>h('div',{class:'wrow'},h('span',{class:'muted'},k),h('span',null,v))))]);
  steps.push(['📐 타당성 조사','사업 전에 무엇을 예상했나',(c.fs?h('div',{class:'fsbox'},h('div',{class:'small'},h('b',null,'📐 타당성·수요예측: '),c.fs.kind),c.fs.bc!=null?bcBar(c.fs.bc,'B/C '+c.fs.bcT):null,h('div',{class:'small'},c.fs.text),h('div',{class:'small muted'},'출처: ',h('a',{href:safe(c.fs.src[1]),target:'_blank',rel:'noopener'},c.fs.src[0]))):h('div',{class:'small muted'},'📐 타당성 조사 결과: 공개 자료 확인 중'))]);
  steps.push(['🛡️ 반론','다른 시각',h('p',{style:'margin:0'},c.counter||'공식 반론 자료를 아직 찾지 못했습니다. 관계 기관의 해명이 있으면 제보해 주세요.')]);
+ if((MIN?.projects||{})[c.n])steps.push(['🏛️ 국회 기록','국회 회의에서 이 사업이 나온 대목',minBox(c.n)]);
  steps.push(['⚖️ 판결','AI 재판부의 판단',h('div',{class:'verdict'},h('div',{class:'stamp'},'제도 개선 권고'),
   h('b',null,'주문(主文)'),h('ol',{style:'margin:4px 0;padding-left:20px'},
    h('li',null,h('b',null,'원인: '),tags.map(t=>CRULE[t][0]).join(' ')||'원인 분석 자료가 부족합니다.'),
@@ -1181,24 +1197,30 @@ function court(id){const scene=courtScene(),pick=h('div',{class:'chips'}),room=h
  show(h('section',{class:'hero'},h('span',{class:'kick'},'가상 법정'),h('h1',null,'AI ',h('mark',null,'세금'),' 법정'),h('p',null,'예산 낭비로 지적된 사업을 법정에 세워 봅니다. 문제 제기 → 증거 → 반론 → 판결 순서로 따라가면, AI 재판부가 원인과 바로잡는 방법, 재발을 막는 방법을 정리합니다.')),
   h('div',{class:'sec'},h('p',{class:'small',style:'margin:0'},'⚠️ 가상 법정입니다. 실제 재판이나 법적 판단이 아니고, 사람이 아니라 사업과 제도를 심리합니다. 판결문은 공식 기관의 지적과 공개 자료를 바탕으로 정해진 규칙에 따라 만든 것입니다.')),
   scene,h('h2',null,'사건 고르기'),pick,room,h('h2',null,'🏛️ 종합 판결: 왜 자꾸 되풀이될까'),all,h('p',{class:'small'},h('a',{href:'#waste'},'← 세금은 어디로 샜나 (사례 지도)')),fix('[정정] AI 세금 법정'));
- wasteData().then(W=>{const C=W.cases||[];let cur=C.find(c=>c.id===id)||C[0];
+ Promise.all([wasteData(),MIN?MIN:fetch('data/minutes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([W,MN])=>{MIN=MN;const C=W.cases||[];let cur=C.find(c=>c.id===id)||C[0];
   const sel=c=>{cur=c;[...pick.children].forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===c.id)));room.replaceChildren(trial(c,scene));history.replaceState(null,'','#court/'+c.id)};
   pick.append(...C.map(c=>{const b=h('button',{class:'fchip',onclick:()=>sel(c)},(WCAT[c.cat]||['•'])[0]+' '+c.n);b.dataset.id=c.id;return b}));sel(cur);
   const tc={};C.forEach(c=>(c.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));const top=Object.entries(tc).sort((a,b)=>b[1]-a[1]);
   all.append(h('div',{class:'sec'},h('b',null,`사건 ${C.length}건에서 가장 많이 나온 원인`),h('div',{class:'hbars'},top.slice(0,6).map(([t,n])=>{const r=hbar(WTAG[t]||t,n,C.length,'var(--hi)');r.querySelector('.v').textContent=n+'건';return r})),
    h('b',null,'AI 재판부의 제도 개선 권고'),...CREFORM.map(([ic,t,d,con,tg])=>h('div',{class:'reform'},h('b',null,`${ic} ${t}`),h('div',{class:'small muted'},tg==='yeta'?`예타 면제로 추진 중인 사업 ${(W.now||[]).filter(p=>p.fs?.exempt).length}건`:`관련 사건 ${tc[tg]||0}건`),h('p',{style:'margin:2px 0'},d),h('p',{class:'small',style:'margin:0'},'⚖️ 반론: '+con))),
    h('p',{class:'small muted',style:'margin:0'},'권고는 여러 사건에서 되풀이된 원인을 묶은 것으로, 어느 정부나 정당을 겨냥하지 않습니다. 실제 제도 도입은 국회와 정부의 몫입니다.')))})}
+function alertBox(){const box=h('div',{class:'sec'});fetch('data/fiscal.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(F=>{const A=F.alerts;if(!A)throw 0;
+ const T=[['up','📈 크게 늘어남'],['fresh','🆕 새로 생김'],['down','📉 크게 줄어듦'],['cut','🚫 사라짐']].filter(([k])=>A[k]?.length);let k=T[0][0];const list=h('div');
+ const tabs=h('div',{class:'chips'},T.map(([v,l],i)=>{const b=h('button',{class:'fchip','aria-pressed':String(!i),onclick:()=>{k=v;[...tabs.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw()}},l);return b}));
+ const draw=()=>{list.replaceChildren(...A[k].slice(0,10).map(r=>h('div',{class:'alr'},h('div',null,h('b',null,r.n),h('div',{class:'small muted'},r.o+(r.f?' · '+r.f:''))),h('div',{class:'tn',style:'text-align:right;white-space:nowrap'},r.p==null?h('b',null,eokT(r.a)):[h('div',{class:'small muted'},`${F.py}년 ${eokT(r.p)}`),h('b',{style:`color:${r.a>=r.p?'var(--hi)':'var(--sky)'}`},r.a?`${eokT(r.a)} ${r.a>=r.p?'▲':'▼'}`:'없음')]))))};draw();
+ box.append(h('p',{class:'small',style:'margin:0'},`${F.y}년 ${F.kind==='draft'?'정부안':'예산'}을 ${F.py}년과 비교해 크게 달라진 사업을 자동으로 골랐습니다. 낭비라는 뜻이 아니라 “왜 달라졌는지 눈여겨볼 사업”입니다. 부처 이름이 바뀌거나 사업이 합쳐져 새로 생기거나 사라진 것처럼 보일 수 있습니다.`),tabs,list,h('p',{class:'small muted',style:'margin:0'},'기준: '+A.rule+'. 회계 간 이동·이자·예치금 등은 뺐습니다. 자료: 기획재정부 열린재정'))}).catch(()=>box.append(h('p',{class:'small muted',style:'margin:0'},'예산 비교 자료를 수집하고 있습니다.')));return box}
 function waste(){const box=h('div'),list=h('div'),nowBox=h('div'),fsBox=h('div');let reg='',cat='';
  show(h('section',{class:'hero'},h('span',{class:'kick'},'공식 지적 사례'),h('h1',null,'세금은 ',h('mark',null,'어디로'),' 샜나'),h('p',null,'감사원·법원·정부 점검·지자체 감사 등 공식 기관이 문제를 지적했거나, 계획과 실제 결과가 공개 자료로 크게 어긋난 사업을 모았습니다. 그리고 지금 추진 중인 비슷한 사업을 같은 질문으로 비교해 봅니다.')),
   h('a',{class:'card',href:'#court'},h('b',null,'⚖️ AI 세금 법정 열기'),h('div',{class:'small muted'},'사업을 가상 법정에 세워 원인과 재발 방지책을 판결합니다')),h('div',{class:'sec'},h('p',{class:'small',style:'margin:0'},'⚠️ 이 목록은 “누가 나쁘다”는 판정이 아닙니다. 기관이 지적한 내용과 숫자를 출처와 함께 옮겼고, 반론이 있는 사례는 함께 적었습니다. 사례는 계속 추가합니다.')),box,list,
   h('h2',null,'🔍 지금 추진 중인 비슷한 사업'),h('p',{class:'small muted'},'아래 사업을 낭비라고 판정하지 않습니다. 과거 사례에서 문제가 된 점을 질문으로 바꿔, 공개 자료로 답을 확인할 수 있는지 봅니다.'),fsBox,nowBox,
   h('h3',{style:'margin:14px 0 4px'},'💰 나라 예산에 들어간 같은 유형 사업'),fiscalBox(),
+  h('h2',null,'🚨 예산 이상 신호'),alertBox(),
   h('h2',null,'🙋 담당 국회의원은 누구였나?'),h('div',{class:'sec'},
    h('p',{style:'margin:0 0 6px'},'국회의원은 예산을 직접 쓰거나 공사를 발주하지 않습니다. 사업을 정하고 집행한 곳은 정부 부처·지자체·공기업이라, 각 사례에 ‘관계 기관’으로 적었습니다.'),
    h('p',{class:'small',style:'margin:0 0 6px'},'의원이 그 사업 예산을 “확보했다”고 스스로 알린 공식 기록(보도자료·의정보고서·국회 회의록)이 확인되면 출처와 함께 덧붙입니다. 지역이 같다는 이유만으로 의원 이름을 연결하지는 않습니다. 한 사업에 여러 정부와 정당이 걸쳐 있는 경우가 많기 때문입니다.'),
    h('p',{class:'small',style:'margin:0'},h('a',{href:'https://github.com/poliscope-kr/poliscope-kr/issues/new?template=correction.yml&title='+encodeURIComponent('[예산 사례 제보] '),target:'_blank',rel:'noopener'},'공식 기록이 있는 사례·의원 기록 제보하기'),' · 이름이 오른 쪽의 반론도 같은 곳으로 받습니다.')),
   h('h2',null,'📚 새로 나온 공식 분석 보고서'),naboBox());
- Promise.all([wasteData(),fetch('data/fiscal.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([W,F])=>{FIS=F;const C=W.cases||[];if(!C.length){box.append(h('p',{class:'muted'},'사례 자료를 불러오지 못했습니다.'));return}
+ Promise.all([wasteData(),fetch('data/fiscal.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),fetch('data/minutes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([W,F,MN])=>{FIS=F;MIN=MN;const C=W.cases||[];if(!C.length){box.append(h('p',{class:'muted'},'사례 자료를 불러오지 못했습니다.'));return}
   const cnt=r=>C.filter(c=>c.r===r).length,ncnt=r=>(W.now||[]).filter(p=>p.r===r).length+(FIS?.items||[]).filter(f=>regOfName(f.n)===r).length,regs=[...new Set(C.map(c=>c.r))];
   const cats=h('div',{class:'chips'},[['','전체'],...Object.entries(WCAT).filter(([k])=>C.some(c=>c.cat===k)).map(([k,[i,l]])=>[k,i+' '+l])].map(([k,l],i)=>{const b=h('button',{class:'fchip','aria-pressed':String(!i),onclick:()=>{cat=k;[...cats.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw()}},l);return b}));
   const mapBox=h('div');box.append(h('div',{class:'sec'},h('b',null,'지역을 눌러 우리 동네 세금 체크'),h('div',{class:'small muted'},'숫자는 공식 지적 사례 수, ‘추진’은 지금 추진 중인 같은 유형 사업 수입니다.'),mapBox,cats));
@@ -1220,7 +1242,7 @@ function waste(){const box=h('div'),list=h('div'),nowBox=h('div'),fsBox=h('div')
    ...fsl.sort((a,b)=>b.fs.bc-a.fs.bc).map(p=>h('div',{class:'fsr'},h('div',null,h('b',null,p.n),' ',p.fs.exempt?h('span',{class:'chip',style:'background:color-mix(in srgb,var(--hi) 15%,transparent)'},p.fs.exempt):null),bcBar(p.fs.bc,'B/C '+p.fs.bcT),h('div',{class:'small muted'},p.fs.kind))),
    h('p',{class:'small muted',style:'margin:0'},'조사 주체와 방법이 서로 달라 숫자를 그대로 줄 세우기는 어렵습니다. 각 사업 카드에서 출처를 확인하세요.')));
   const chk=W.check||[];nowBox.append(...(W.now||[]).map(p=>{const past=(p.like||[]).map(id=>C.find(c=>c.id===id)).filter(Boolean);
-   return h('div',{class:'card wnow'},h('b',null,p.n),h('div',{class:'small muted'},p.r),h('p',{class:'small',style:'margin:4px 0'},p.what),p.note?h('p',{class:'small',style:'margin:0 0 4px'},p.note):null,p.fs?h('div',{style:'margin:4px 0'},h('div',{class:'small'},`📐 ${p.fs.kind}${p.fs.exempt?' · '+p.fs.exempt:''}`),bcBar(p.fs.bc,'B/C '+p.fs.bcT),p.fs.extra?h('div',{class:'small muted'},p.fs.extra):null):null,
+   return h('div',{class:'card wnow'},h('b',null,p.n),h('div',{class:'small muted'},p.r),h('p',{class:'small',style:'margin:4px 0'},p.what),p.note?h('p',{class:'small',style:'margin:0 0 4px'},p.note):null,timeline(p.tl),minBox(p.n),p.fs?h('div',{style:'margin:4px 0'},h('div',{class:'small'},`📐 ${p.fs.kind}${p.fs.exempt?' · '+p.fs.exempt:''}`),bcBar(p.fs.bc,'B/C '+p.fs.bcT),p.fs.extra?h('div',{class:'small muted'},p.fs.extra):null):null,
     past.length?h('div',{class:'small'},'비교할 과거 사례: ',...past.flatMap((c,i)=>[i?', ':'',h('a',{href:'#waste',onclick:e=>{e.preventDefault();reg=c.r;cat='';draw();setTimeout(()=>{const d=document.getElementById('w-'+c.id);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})}},50)}},`${c.n} (${c.real})`)])):null,
     h('details',null,h('summary',{class:'small'},`과거 사례에서 나온 질문으로 점검하기 (${Object.values(p.ans||{}).filter(a=>a[0]!=='none').length}/${chk.length} 확인)`),h('ul',{class:'small',style:'margin:4px 0;padding-left:18px'},chk.map(([k,q])=>{const an=(p.ans||{})[k]||['none','공개 자료 확인 중'];return h('li',null,q,h('div',{class:an[0]==='none'?'muted':''},{ok:'✅ ',warn:'⚠️ ',none:'❔ '}[an[0]]+an[1]))}))),
     h('div',{class:'small'},'출처: ',...p.src.flatMap(([t,u],i)=>[i?' · ':'',h('a',{href:safe(u),target:'_blank',rel:'noopener'},t)])))}))})}
