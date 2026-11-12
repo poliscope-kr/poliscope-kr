@@ -1131,6 +1131,18 @@ function airBox(c){if(!c.air||!AIR?.years?.[c.air.n])return null;const Y=AIR.yea
   lineChart(ys.map(y=>y.slice(2)),[[`${c.air.n}공항 연간 이용객(명)`,'var(--sky)',vals]]),
   h('div',{class:'small'},`최근 12개월(${lm.slice(0,4)}.${lm.slice(4)}까지) ${man(l12)}명 · 가장 많았던 ${best}년 ${man(Y[best])}명`+(c.air.fc?` (당초 예측 연 ${man(c.air.fc)}명의 ${(Y[best]/c.air.fc*100).toFixed(0)}%)`:'')),
   c.air.note?h('div',{class:'small muted'},c.air.note):null,h('div',{class:'small muted'},'자료: '+AIR.src))}
+// 지자체 행사·축제 예산 (지방재정365)
+let FEST=null;
+function festBox(sido){const box=h('div',{class:'sec'});if(!FEST?.govs){box.append(h('p',{class:'small muted',style:'margin:0'},'자료를 불러오지 못했습니다.'));return box}
+ const Y=FEST.years,yl=Y[Y.length-1],y0=Y[0],G=FEST.govs.filter(g=>g.v[yl]&&(!sido||g.s===sido));let mode='rt';const list=h('div'),q=h('input',{type:'search',placeholder:'시·군·구 이름 (예: 무주)','aria-label':'지자체 이름',oninput:()=>draw()}),one=h('div');
+ const val={rt:g=>g.v[yl][1],amt:g=>g.v[yl][0],grow:g=>g.v[y0]&&g.v[y0][0]>0?g.v[yl][0]/g.v[y0][0]:null};
+ const tabs=h('div',{class:'chips'},[['rt','예산 대비 비율'],['amt','금액'],['grow',`${y0}년 대비 증가`]].map(([v,l],i)=>{const b=h('button',{class:'fchip','aria-pressed':String(!i),onclick:()=>{mode=v;[...tabs.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw()}},l);return b}));
+ const show1=g=>{one.replaceChildren(h('div',{class:'fsbox'},h('b',null,`${g.s} ${g.n.startsWith(g.s)?'':g.n} 행사·축제 예산 ${Y.length}년`),lineChart(Y.map(y=>y.slice(2)),[['행사·축제 예산(억 원)','var(--hi)',Y.map(y=>g.v[y]?.[0]??null)]]),h('div',{class:'small'},`${yl}년 ${g.v[yl][0].toLocaleString('ko-KR')}억 원 · 일반회계 세출의 ${g.v[yl][1]}%`+(g.v[y0]?` · ${y0}년 ${g.v[y0][0].toLocaleString('ko-KR')}억 원`:''))))};
+ const draw=()=>{const t=norm(q.value);let rows=G.filter(g=>!t||norm(g.s+g.n).includes(t)).map(g=>[g,val[mode](g)]).filter(x=>x[1]!=null).sort((a,b)=>b[1]-a[1]).slice(0,t?20:10);const mx=Math.max(...rows.map(x=>x[1]),0.01);
+  list.replaceChildren(h('div',{class:'hbars'},rows.map(([g,v])=>{const r=hbar(`${sido?'':g.s+' '}${g.n}`,v,mx,'var(--hi)');r.querySelector('.v').textContent=mode==='rt'?v.toFixed(1)+'%':mode==='amt'?eokT(v):'×'+v.toFixed(1);r.style.cursor='pointer';r.onclick=()=>show1(g);return r})));if(rows[0]&&(t||sido))show1(rows[0][0]);else one.textContent=''};
+ draw();
+ box.append(h('p',{class:'small',style:'margin:0'},`${sido?shortR(sido)+' 시·군·구의 ':'전국 지자체 '}${yl}년 행사·축제 예산입니다. 막대를 누르면 ${Y.length}년 추이가 나옵니다. 비율이 높거나 늘었다고 낭비라는 뜻은 아닙니다. 관광·문화가 중심인 지역은 축제 예산이 자연스럽게 클 수 있습니다.`),...(sido?[]:[q]),tabs,list,one,
+  h('p',{class:'small muted',style:'margin:0'},'자료: '+FEST.src));return box}
 function wcase(c,open){const [ic,cl]=WCAT[c.cat]||['•',''],row=(k,v)=>v&&v!=='–'?h('div',{class:'wrow'},h('span',{class:'muted'},k),h('span',null,v)):null;
  return h('details',{class:'wcase',id:'w-'+c.id,open:open||null},h('summary',null,h('span',{class:'wtt'},h('b',null,ic+' '+c.n),h('small',{class:'muted'},`${c.r} · ${cl} · ${c.per}`)),h('span',{class:'wcost tn'},c.cost!=='–'?c.cost:'')),
   h('p',{style:'margin:6px 0'},c.iss),
@@ -1219,18 +1231,19 @@ function alertBox(){const box=h('div',{class:'sec'});fetch('data/fiscal.json',{c
  const tabs=h('div',{class:'chips'},T.map(([v,l],i)=>{const b=h('button',{class:'fchip','aria-pressed':String(!i),onclick:()=>{k=v;[...tabs.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw()}},l);return b}));
  const draw=()=>{list.replaceChildren(...A[k].slice(0,10).map(r=>h('div',{class:'alr'},h('div',null,h('b',null,r.n),h('div',{class:'small muted'},r.o+(r.f?' · '+r.f:''))),h('div',{class:'tn',style:'text-align:right;white-space:nowrap'},r.p==null?h('b',null,eokT(r.a)):[h('div',{class:'small muted'},`${F.py}년 ${eokT(r.p)}`),h('b',{style:`color:${r.a>=r.p?'var(--hi)':'var(--sky)'}`},r.a?`${eokT(r.a)} ${r.a>=r.p?'▲':'▼'}`:'없음')]))))};draw();
  box.append(h('p',{class:'small',style:'margin:0'},`${F.y}년 ${F.kind==='draft'?'정부안':'예산'}을 ${F.py}년과 비교해 크게 달라진 사업을 자동으로 골랐습니다. 낭비라는 뜻이 아니라 “왜 달라졌는지 눈여겨볼 사업”입니다. 부처 이름이 바뀌거나 사업이 합쳐져 새로 생기거나 사라진 것처럼 보일 수 있습니다.`),tabs,list,h('p',{class:'small muted',style:'margin:0'},'기준: '+A.rule+'. 회계 간 이동·이자·예치금 등은 뺐습니다. 자료: 기획재정부 열린재정'))}).catch(()=>box.append(h('p',{class:'small muted',style:'margin:0'},'예산 비교 자료를 수집하고 있습니다.')));return box}
-function waste(){const box=h('div'),list=h('div'),nowBox=h('div'),fsBox=h('div');let reg='',cat='';
+function waste(){const festSec=h('div'),box=h('div'),list=h('div'),nowBox=h('div'),fsBox=h('div');let reg='',cat='';
  show(h('section',{class:'hero'},h('span',{class:'kick'},'공식 지적 사례'),h('h1',null,'세금은 ',h('mark',null,'어디로'),' 샜나'),h('p',null,'감사원·법원·정부 점검·지자체 감사 등 공식 기관이 문제를 지적했거나, 계획과 실제 결과가 공개 자료로 크게 어긋난 사업을 모았습니다. 그리고 지금 추진 중인 비슷한 사업을 같은 질문으로 비교해 봅니다.')),
   h('a',{class:'card',href:'#court'},h('b',null,'⚖️ AI 세금 법정 열기'),h('div',{class:'small muted'},'사업을 가상 법정에 세워 원인과 재발 방지책을 판결합니다')),h('div',{class:'sec'},h('p',{class:'small',style:'margin:0'},'⚠️ 이 목록은 “누가 나쁘다”는 판정이 아닙니다. 기관이 지적한 내용과 숫자를 출처와 함께 옮겼고, 반론이 있는 사례는 함께 적었습니다. 사례는 계속 추가합니다.')),box,list,
   h('h2',null,'🔍 지금 추진 중인 비슷한 사업'),h('p',{class:'small muted'},'아래 사업을 낭비라고 판정하지 않습니다. 과거 사례에서 문제가 된 점을 질문으로 바꿔, 공개 자료로 답을 확인할 수 있는지 봅니다.'),fsBox,nowBox,
   h('h3',{style:'margin:14px 0 4px'},'💰 나라 예산에 들어간 같은 유형 사업'),fiscalBox(),
   h('h2',null,'🚨 예산 이상 신호'),alertBox(),
+  h('h2',null,'🎪 지자체 행사·축제 예산'),festSec,
   h('h2',null,'🙋 담당 국회의원은 누구였나?'),h('div',{class:'sec'},
    h('p',{style:'margin:0 0 6px'},'국회의원은 예산을 직접 쓰거나 공사를 발주하지 않습니다. 사업을 정하고 집행한 곳은 정부 부처·지자체·공기업이라, 각 사례에 ‘관계 기관’으로 적었습니다.'),
    h('p',{class:'small',style:'margin:0 0 6px'},'의원이 그 사업 예산을 “확보했다”고 스스로 알린 공식 기록(보도자료·의정보고서·국회 회의록)이 확인되면 출처와 함께 덧붙입니다. 지역이 같다는 이유만으로 의원 이름을 연결하지는 않습니다. 한 사업에 여러 정부와 정당이 걸쳐 있는 경우가 많기 때문입니다.'),
    h('p',{class:'small',style:'margin:0'},h('a',{href:'https://github.com/poliscope-kr/poliscope-kr/issues/new?template=correction.yml&title='+encodeURIComponent('[예산 사례 제보] '),target:'_blank',rel:'noopener'},'공식 기록이 있는 사례·의원 기록 제보하기'),' · 이름이 오른 쪽의 반론도 같은 곳으로 받습니다.')),
   h('h2',null,'📚 새로 나온 공식 분석 보고서'),naboBox());
- Promise.all([wasteData(),fetch('data/fiscal.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),fetch('data/minutes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),fetch('data/airports.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([W,F,MN,AP])=>{FIS=F;MIN=MN;AIR=AP;const C=W.cases||[];if(!C.length){box.append(h('p',{class:'muted'},'사례 자료를 불러오지 못했습니다.'));return}
+ Promise.all([wasteData(),fetch('data/fiscal.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),fetch('data/minutes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),fetch('data/airports.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),fetch('data/festival.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([W,F,MN,AP,FE])=>{FIS=F;MIN=MN;AIR=AP;FEST=FE;festSec.replaceChildren(festBox());const C=W.cases||[];if(!C.length){box.append(h('p',{class:'muted'},'사례 자료를 불러오지 못했습니다.'));return}
   const cnt=r=>C.filter(c=>c.r===r).length,ncnt=r=>(W.now||[]).filter(p=>p.r===r).length+(FIS?.items||[]).filter(f=>regOfName(f.n)===r).length,regs=[...new Set(C.map(c=>c.r))];
   const cats=h('div',{class:'chips'},[['','전체'],...Object.entries(WCAT).filter(([k])=>C.some(c=>c.cat===k)).map(([k,[i,l]])=>[k,i+' '+l])].map(([k,l],i)=>{const b=h('button',{class:'fchip','aria-pressed':String(!i),onclick:()=>{cat=k;[...cats.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw()}},l);return b}));
   const mapBox=h('div');box.append(h('div',{class:'sec'},h('b',null,'지역을 눌러 우리 동네 세금 체크'),h('div',{class:'small muted'},'숫자는 공식 지적 사례 수, ‘추진’은 지금 추진 중인 같은 유형 사업 수입니다.'),mapBox,cats));
@@ -1243,6 +1256,7 @@ function waste(){const box=h('div'),list=h('div'),nowBox=h('div'),fsBox=h('div')
      h('div',{class:'rgn'},h('div',null,h('b',{class:'tn'},cs.length),h('small',null,'공식 지적 사례')),h('div',null,h('b',{class:'tn'},ns.length),h('small',null,'추진 중 비슷한 사업')),h('div',null,h('b',{class:'tn'},fs.length),h('small',null,`${FIS?.y||''} 예산 건설 사업`))),
      ns.length?h('div',{class:'small'},'추진 중: ',ns.map(p=>p.n+(p.fs?` (B/C ${p.fs.bcT})`:'')).join(', ')):null,
      fs.length?h('div',{class:'small'},`${FIS.y}년 ${FIS.kind==='draft'?'정부안':'예산'}: `,fs.map(f=>`${f.n} ${eokT(f.a)}`).join(', ')):null,
+     FEST?h('details',{class:'tlw'},h('summary',{class:'small'},`🎪 ${shortR(reg)} 시·군·구 행사·축제 예산 보기`),festBox(reg)):null,
      h('div',{class:'btns'},shareBtn('우리 동네 카드 공유',()=>shareCanvas(regionCanvas(reg,cs,ns,fs),`${shortR(reg)}_세금체크.png`,`${shortR(reg)} 세금 체크 · ${SITEURL()}#waste`)))))}
    list.append(h('h2',null,(reg?(reg==='전국'?'전국 단위':shortR(reg))+' ':'')+`사례 ${sel.length}건`),sel.length?h('div',null,sel.map(c=>wcase(c,sel.length===1))):h('p',{class:'muted'},'이 조건에 해당하는 사례가 아직 없습니다.'));
    const tc={};sel.forEach(c=>(c.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));const top=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,4);
