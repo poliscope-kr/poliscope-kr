@@ -35,7 +35,7 @@ const fest = [];
 for (let p = 1; p < 20; p++) { const r = await get('KorService2/searchFestival2', `numOfRows=1000&pageNo=${p}&eventStartDate=${Y - 1}0101&arrange=A`); if (!r) break; fest.push(...r.rows); if (p * 1000 >= r.total) break; }
 console.log('축제', fest.length);
 const ymd = d => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`, P = s => new Date(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8));
-const out = {};
+const out = {}, DAYUP = {};
 for (const f of fest) {
   const code = (f.lDongRegnCd || '') + (f.lDongSignguCd || ''), D = V.days[code]; if (!D || code.length !== 5) continue;
   const s = P(f.eventstartdate), e = P(f.eventenddate), len = Math.round((e - s) / 864e5) + 1;
@@ -46,6 +46,7 @@ for (const f of fest) {
     const b = [-28, -21, -14, 14, 21, 28].map(o => D[ymd(new Date(t.getFullYear(), t.getMonth(), t.getDate() + o))]).filter(v => v != null);
     if (b.length < 3) continue; const bb = b.sort((x, y) => x - y)[Math.floor(b.length / 2)]; // 같은 요일 중앙값
     up += a - bb; base += bb; act += a; n++;
+    (DAYUP[code] = DAYUP[code] || {})[ymd(t)] = a - bb;
   }
   if (!n) continue;
   (out[code] = out[code] || { n: V.names[code], f: [] }).f.push({ t: f.title, s: f.eventstartdate, e: f.eventenddate, up: Math.round(up), pct: base ? Math.round((act / base - 1) * 100) : null });
@@ -58,11 +59,11 @@ const byName = {}; for (const g of FE.govs) byName[g.s + '|' + g.n] = g;
 const merged = {};
 for (const [code, o] of Object.entries(out)) {
   const sd = code.startsWith('12') ? (/^(동구|서구|남구|북구|광산구)$/.test(o.n) ? '광주' : '전남') : SIDO[code.slice(0, 2)], nm = sd === '제주' ? '제주 본청(광역)' : o.n.includes(' ') ? o.n.split(' ')[0] : o.n, k = sd + '|' + nm;
-  (merged[k] = merged[k] || { code, sd, n: nm, f: [] }).f.push(...o.f);
+  const mg = (merged[k] = merged[k] || { code, sd, n: nm, f: [], days: {} }); mg.f.push(...o.f); Object.assign(mg.days, DAYUP[code] || {});
 }
 for (const [k, o] of Object.entries(merged)) {
   const code = o.code, g = byName[k]; if (!g || !g.v[Y]) { console.log('예산 연결 안 됨', k); continue; }
-  const up = o.f.reduce((t, x) => t + Math.max(0, x.up), 0);
+  const up = Math.round(Object.values(o.days).reduce((t, v) => t + v, 0)); // 축제가 겹친 날은 한 번만 센다
   res.push({ cd: code, n: g.n, s: g.s, bud: g.v[Y][0], nf: o.f.length, up, per: up > 0 ? Math.round(g.v[Y][0] * 1e8 / up) : null, top: o.f.sort((a, b) => b.up - a.up).slice(0, 5) });
 }
 writeFileSync('docs/data/festeffect.json', JSON.stringify({ updated: new Date().toISOString(), y: Y, until: `${Y}.${LASTM}`, nfest: fest.length, src: '한국관광공사 빅데이터 지역별 방문자수(KT·SKT 통신 자료) · 한국관광공사 관광정보(축제 기간) · 행정안전부 지방재정365', govs: res }));
