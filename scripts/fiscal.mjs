@@ -25,14 +25,17 @@ async function all(code, params, max = 30) {
 // 같은 유형(새 공항, 도시철도·경전철) 건설 사업만: 단위사업 이름으로 고른다.
 const GROUPS = [['air', '새 공항 건설', /^신공항건설$/], ['rail', '도시철도·경전철 건설', /^(지하철건설지원|경량전철건설지원|광역철도건설지원)$/]];
 const year = new Date().getFullYear(), byYear = {};
+const val = r => { const d = Number(r.Y_YY_DFN_MEDI_KCUR_AMT || 0), m = Number(r.Y_YY_MEDI_KCUR_AMT || 0); return d > 0 ? [d, 'final'] : [m, 'draft']; };
 for (const y of [year + 1, year, year - 1]) {
   const rows = await all('ExpenditureBudgetInit5', { FSCL_YY: y }, 40);
-  console.log('세부사업 예산', y, rows.length);
-  if (rows.length) byYear[y] = rows;
+  const pos = rows.filter(r => val(r)[0] > 0).length;
+  console.log('세부사업 예산', y, rows.length, '금액 있는 행', pos);
+  if (pos > 100) byYear[y] = rows;
   if (Object.keys(byYear).length === 2) break;
 }
 const ys = Object.keys(byYear).map(Number).sort((a, b) => b - a), Y = ys[0], P = ys[1];
-const amt = r => Math.round(Number(r.Y_YY_DFN_MEDI_KCUR_AMT ?? r.Y_YY_MEDI_KCUR_AMT ?? 0) / 100000); // 천원 → 억원
+const amt = r => Math.round(val(r)[0] / 100000); // 천원 → 억원
+const kind = (byYear[Y] || []).some(r => Number(r.Y_YY_DFN_MEDI_KCUR_AMT || 0) > 0) ? 'final' : 'draft';
 const pick = (rows, re) => (rows || []).filter(r => re.test(r.ACTV_NM || '') && !/추진단|공단|운영|노후|증차/.test(r.SACTV_NM || ''));
 const items = [];
 for (const [g, , re] of GROUPS) {
@@ -40,5 +43,5 @@ for (const [g, , re] of GROUPS) {
   for (const r of pick(byYear[Y], re)) items.push({ g, n: r.SACTV_NM, o: r.OFFC_NM, a: amt(r), p: prev[r.SACTV_NM] ?? null });
 }
 items.sort((a, b) => b.a - a.a);
-writeFileSync(`${OUT}/fiscal.json`, JSON.stringify({ updated: new Date().toISOString(), y: Y, py: P || null, groups: Object.fromEntries(GROUPS.map(([k, n]) => [k, n])), items, src: '열린재정 세부사업 예산편성현황(ExpenditureBudgetInit5)' }));
+writeFileSync(`${OUT}/fiscal.json`, JSON.stringify({ updated: new Date().toISOString(), y: Y, py: P || null, kind, groups: Object.fromEntries(GROUPS.map(([k, n]) => [k, n])), items, src: '열린재정 세부사업 예산편성현황(ExpenditureBudgetInit5)' }));
 console.log('저장', Y, P, items.length, JSON.stringify(items.slice(0, 5)));
