@@ -38,7 +38,9 @@ for (const y of [2024, 2025, 2026]) {
   console.log('국토위 회의록', y, r.length, r[0] ? JSON.stringify(r[0]).slice(0, 300) : '');
   confs.push(...r.map(x => ({ id: x.CONF_ID || x.CONFER_NUM, d: x.CONF_DATE, c: x.COMM_NAME, t: x.TITLE, u: x.PDF_LINK_URL })));
 }
-const todo = confs.filter(c => c.u && c.id && !cache.done[c.id]).sort((a, b) => String(b.d).localeCompare(String(a.d)));
+{ const r = await all('VCONFAPIGCONFLIST', { ERACO: '제22대' }); const q = r.filter(x => /국토교통|예산결산/.test(x.CMIT_NM || '')); console.log('국정감사 회의록', r.length, '국토·예결', q.length); confs.push(...q.map(x => ({ id: x.CONF_ID, d: x.CONF_DT, c: (x.CMIT_NM || '') + ' 국정감사', u: x.DOWN_URL }))); }
+const uniq = new Map(); for (const c of confs) if (c.id && !uniq.has(String(c.id))) uniq.set(String(c.id), c);
+const todo = [...uniq.values()].filter(c => c.u && c.id && !cache.done[c.id]).sort((a, b) => String(b.d).localeCompare(String(a.d)));
 console.log('회의록 전체', confs.length, '새로 읽을 것', todo.length);
 let n = 0;
 const SPK = /^[○◯]\s*([가-힣]{2,4})\s*(위원장|위원|의원)/;
