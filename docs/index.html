@@ -1103,12 +1103,13 @@ function fiscalBox(){const box=h('div',{class:'sec'});fetch('data/fiscal.json',{
  const eok=v=>v>=10000?(v/10000).toFixed(1).replace(/\.0$/,'')+'조':Math.round(v).toLocaleString('ko-KR')+'억';
  box.append(h('p',{class:'small',style:'margin:0'},`${F.y}년 나라 예산${F.kind==='draft'?'(정부안, 국회 심의 중)':'(국회 확정)'}에 들어간 같은 유형의 건설 사업입니다. 그 해 한 해 예산이며, 사업 전체 비용(총사업비)은 이보다 훨씬 큽니다.`),
   ...Object.entries(F.groups).map(([g,name])=>{const rows=I.filter(x=>x.g===g);if(!rows.length)return null;const mx=Math.max(...rows.map(x=>x.a),1),sum=rows.reduce((t,x)=>t+x.a,0);
-   return h('div',null,h('b',null,`${name} · ${rows.length}개 사업, 합계 ${eok(sum)} 원`),h('div',{class:'hbars'},rows.slice(0,10).map(x=>{const r=hbar(x.n,x.a,mx,g==='air'?'var(--sky)':'var(--vio)');const v=r.querySelector('.v');v.textContent=eok(x.a);if(x.p!=null&&x.p!==x.a)v.append(h('span',{style:`font-size:11px;color:var(--muted)`},` (${F.py}년 ${eok(x.p)})`));else if(x.p==null&&F.py)v.append(h('span',{style:'font-size:11px;color:var(--muted)'},' (신규)'));return r})))}),
+   return h('div',null,h('b',null,`${name} · ${rows.length}개 사업, 합계 ${eok(sum)} 원`),h('div',{class:'hbars'},rows.slice(0,10).map(x=>{const r=hbar(x.n,x.a,mx,g==='air'?'var(--sky)':'var(--vio)');const v=r.querySelector('.v');v.textContent=eok(x.a);const d=x.p==null?(F.py?'새로 들어간 사업':''):x.p===x.a?`${F.py}년과 같음`:`${F.py}년 ${eok(x.p)} → ${x.a>x.p?'▲':'▼'} ${eok(Math.abs(x.a-x.p))}`;return d?h('div',null,r,h('div',{class:'small muted',style:'margin:-4px 0 6px'},d)):r})))}),
   h('p',{class:'small muted',style:'margin:0'},`예산이 많다고 낭비라는 뜻은 아닙니다. 위의 점검 질문으로 함께 살펴보세요. 자료: 기획재정부 열린재정(${F.src.replace(/^열린재정 /,'')}), ${F.kind==='draft'?'정부안':'국회 확정 예산'} 기준. `+new Date(F.updated).toLocaleDateString('ko-KR')+' 수집'))}).catch(()=>box.append(h('p',{class:'small muted',style:'margin:0'},'나라 예산 자료를 수집하고 있습니다.')));return box}
 function waste(){const box=h('div'),list=h('div'),nowBox=h('div');let reg='',cat='';
  show(h('section',{class:'hero'},h('span',{class:'kick'},'공식 지적 사례'),h('h1',null,'세금은 ',h('mark',null,'어디로'),' 샜나'),h('p',null,'감사원·법원·정부 점검·지자체 감사 등 공식 기관이 문제를 지적했거나, 계획과 실제 결과가 공개 자료로 크게 어긋난 사업을 모았습니다. 그리고 지금 추진 중인 비슷한 사업을 같은 질문으로 비교해 봅니다.')),
   h('div',{class:'sec'},h('p',{class:'small',style:'margin:0'},'⚠️ 이 목록은 “누가 나쁘다”는 판정이 아닙니다. 기관이 지적한 내용과 숫자를 출처와 함께 옮겼고, 반론이 있는 사례는 함께 적었습니다. 사례는 계속 추가합니다.')),box,list,
   h('h2',null,'🔍 지금 추진 중인 비슷한 사업'),h('p',{class:'small muted'},'아래 사업을 낭비라고 판정하지 않습니다. 과거 사례에서 문제가 된 점을 질문으로 바꿔, 공개 자료로 답을 확인할 수 있는지 봅니다.'),nowBox,
+  h('h3',{style:'margin:14px 0 4px'},'💰 나라 예산에 들어간 같은 유형 사업'),fiscalBox(),
   h('h2',null,'🙋 담당 국회의원은 누구였나?'),h('div',{class:'sec'},
    h('p',{style:'margin:0 0 6px'},'국회의원은 예산을 직접 쓰거나 공사를 발주하지 않습니다. 사업을 정하고 집행한 곳은 정부 부처·지자체·공기업이라, 각 사례에 ‘관계 기관’으로 적었습니다.'),
    h('p',{class:'small',style:'margin:0 0 6px'},'의원이 그 사업 예산을 “확보했다”고 스스로 알린 공식 기록(보도자료·의정보고서·국회 회의록)이 확인되면 출처와 함께 덧붙입니다. 지역이 같다는 이유만으로 의원 이름을 연결하지는 않습니다. 한 사업에 여러 정부와 정당이 걸쳐 있는 경우가 많기 때문입니다.'),
