@@ -5,20 +5,20 @@ const OUT = process.env.OUT_DIR || 'docs/data', BASE = process.env.GDELT_BASE ||
 const Q = '"South Korea" (politics OR parliament OR "National Assembly" OR lawmakers OR democracy OR election OR "ruling party" OR "opposition party")';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 async function get(params) {
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 7; i++) {
     try {
       const r = await fetch(BASE + '?' + new URLSearchParams({ format: 'json', ...params }), { signal: AbortSignal.timeout(40000), headers: { 'User-Agent': 'poliscope-kr (civic data)' } });
       const t = await r.text(); if (!r.ok || !t.trim().startsWith('{')) throw new Error(`HTTP ${r.status} ${t.slice(0, 80)}`);
       return JSON.parse(t);
-    } catch (e) { if (i === 3) throw e; await wait(8000 * (i + 1)); }
+    } catch (e) { if (i === 6) throw e; await wait(/429/.test(e.message) ? 30000 * (i + 1) : 10000 * (i + 1)); }
   }
 }
 const series = j => (j.timeline?.[0]?.data || []).map(d => [String(d.date).slice(0, 8), +d.value]);
 const prev = existsSync(`${OUT}/world.json`) ? JSON.parse(readFileSync(`${OUT}/world.json`, 'utf8')) : {};
-const out = { updated: new Date().toISOString(), query: Q, ...prev };
+const out = { ...prev, query: Q };
 try {
-  const tone = series(await get({ query: Q, mode: 'timelinetone', timespan: '12m' })); await wait(6000);
-  const vol = series(await get({ query: Q, mode: 'timelinevolraw', timespan: '12m' })); await wait(6000);
+  const tone = series(await get({ query: Q, mode: 'timelinetone', timespan: '12m' })); await wait(12000);
+  const vol = series(await get({ query: Q, mode: 'timelinevolraw', timespan: '12m' })); await wait(12000);
   const byMonth = (rows, agg) => { const g = {}; rows.forEach(([d, v]) => (g[d.slice(0, 6)] = g[d.slice(0, 6)] || []).push(v)); return Object.entries(g).sort().map(([m, a]) => [m, agg(a)]); };
   out.toneM = byMonth(tone, a => Math.round(a.reduce((x, y) => x + y, 0) / a.length * 100) / 100);
   out.volM = byMonth(vol, a => a.reduce((x, y) => x + y, 0));
@@ -27,7 +27,7 @@ try {
   out.byCountry = {};
   for (const [k, c] of [['미국', 'US'], ['일본', 'JA'], ['중국', 'CH'], ['영국', 'UK']]) {
     try { const t = series(await get({ query: `${Q} sourcecountry:${c}`, mode: 'timelinetone', timespan: '3m' })); out.byCountry[k] = { tone30: avg(last(t, 30)), tone90: avg(t.map(x => x[1])) }; } catch (e) { console.log(`${k} 논조 실패: ${e.message}`); }
-    await wait(6000);
+    await wait(12000);
   }
   const art = await get({ query: `${Q} sourcelang:english`, mode: 'artlist', maxrecords: 20, sort: 'hybridrel', timespan: '7d' });
   out.articles = (art.articles || []).map(a => ({ t: a.title, u: a.url, d: String(a.seendate || '').slice(0, 8), s: a.domain, c: a.sourcecountry })).filter(a => a.t && /^https?:/.test(a.u)).slice(0, 15);
