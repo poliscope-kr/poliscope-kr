@@ -16,4 +16,8 @@ async function all(code) {
 }
 const res = { updated: new Date().toISOString(), raw: {} };
 for (const [k, code] of [['exec', 'OPFI117'], ['carry', 'OPFI118'], ['unused', 'OPFI119']]) res.raw[k] = await all(code);
-writeFileSync('docs/data/execution.json', JSON.stringify(res));
+const F = n => n === '외교·통일' ? '통일·외교' : n, fld = {};
+const put = (rows, i, key) => rows.forEach(r => { const f = F(r.FLD_NM), y = r.ACNT_YR; ((fld[f] = fld[f] || {})[y] = fld[f][y] || [0, 0, 0, 0])[i] += Number(r[key] || 0); });
+put(res.raw.exec, 0, 'SUM_BDG_CAMT'); put(res.raw.exec, 1, 'SUM_EXE_AMT'); put(res.raw.carry, 2, 'SUM_NYR_BFW_AMT'); put(res.raw.unused, 3, 'SUM_DUSE_AMT');
+writeFileSync('docs/data/execution.json', JSON.stringify({ updated: res.updated, unit: '억 원', cols: ['예산현액', '집행액', '다음 해로 이월', '불용'], src: '기획재정부 열린재정 분야별 집행·이월·불용 추이(결산 기준)', fld }));
+console.log(Object.keys(fld));
