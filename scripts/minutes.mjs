@@ -26,8 +26,10 @@ async function all(id, params) {
 // 찾을 사업 이름: 사례·추진 중 사업 + 열린재정 새 공항·철도 사업
 const W = JSON.parse(readFileSync(`${OUT}/waste.json`, 'utf8')), F = existsSync(`${OUT}/fiscal.json`) ? JSON.parse(readFileSync(`${OUT}/fiscal.json`, 'utf8')) : { items: [] };
 const norm = s => s.replace(/\s+/g, '').replace(/[()·\-–]/g, '');
-const ALIAS = { '가덕도신공항': ['가덕도신공항', '가덕신공항'], '대구경북 통합신공항': ['대구경북신공항', '대구경북통합신공항', 'TK신공항', '통합신공항'], '새만금 국제공항': ['새만금국제공항', '새만금신공항', '새만금공항'], '인천 F1 그랑프리 유치': ['F1'], '양양국제공항': ['양양공항', '양양국제공항'], '무안국제공항': ['무안공항', '무안국제공항'], '울진공항': ['울진공항'], '김제공항': ['김제공항'], '경인아라뱃길': ['아라뱃길', '경인운하'], '용인경전철': ['용인경전철'], '의정부경전철': ['의정부경전철'], '부산–김해경전철': ['김해경전철', '부산김해경전철'], '새만금 세계스카우트잼버리': ['잼버리'], '평창 알펜시아': ['알펜시아'], '4대강 살리기 사업': ['4대강'], '전국 출렁다리 경쟁': ['출렁다리'] };
-const TARGETS = Object.entries(ALIAS).map(([n, a]) => ({ n, a: a.map(norm) }));
+const ALIAS = { '가덕도신공항': ['가덕도신공항', '가덕신공항'], '대구경북 통합신공항': ['대구경북신공항', '대구경북통합신공항', 'TK신공항', '통합신공항'], '새만금 국제공항': ['새만금국제공항', '새만금신공항', '새만금공항'], '인천 F1 그랑프리 유치': ['F1그랑프리', 'F1유치', 'F1대회', 'F1경기', '포뮬러원'], '양양국제공항': ['양양공항', '양양국제공항'], '무안국제공항': ['무안공항', '무안국제공항'], '울진공항': ['울진공항'], '김제공항': ['김제공항'], '경인아라뱃길': ['아라뱃길', '경인운하'], '용인경전철': ['용인경전철'], '의정부경전철': ['의정부경전철'], '부산–김해경전철': ['김해경전철', '부산김해경전철'], '새만금 세계스카우트잼버리': ['잼버리'], '평창 알펜시아': ['알펜시아'], '4대강 살리기 사업': ['4대강(?!국)'], '전국 출렁다리 경쟁': ['출렁다리'] };
+const TARGETS = Object.entries(ALIAS).map(([n, a]) => ({ n, a: a.map(x => x.includes('(?') ? x : norm(x)) }));
+const EXCL = { '무안국제공항': /사고|참사|유가족|희생|추모|조류|로컬라이저|둔덕/ };
+const hit = (t, s) => t.a.some(a => a.includes('(?') ? new RegExp(a).test(s) : s.includes(a));
 for (const it of F.items || []) { const k = norm(it.n.replace(/건설.*$|건립.*$/, '')); if (k.length >= 4 && !TARGETS.some(t => t.a.includes(k))) TARGETS.push({ n: it.n, a: [k] }); }
 // 의원 이름
 const M = JSON.parse(readFileSync(`${OUT}/members.json`, 'utf8')), byName = {};
@@ -65,12 +67,14 @@ for (const c of todo) {
       if (!who) continue;
       const nl = norm(L + (lines[i + 1] && !/^[○◯]/.test(lines[i + 1].trim()) ? lines[i + 1] : ''));
       for (const t of TARGETS) {
-        if (!t.a.some(a => nl.includes(a))) continue;
-        const key = who + '|' + t.n; if (seen.has(key)) continue; seen.add(key);
+        if (!hit(t, nl)) continue;
+        const key = who + '|' + t.n; if (seen.has(key)) continue;
         const ctx = lines.slice(Math.max(0, i - 2), i + 3).map(s => s.trim()).join(' ').replace(/[○◯]\s*[가-힣]{2,4}\s*(위원장|위원|의원)\s*/g, '').replace(/\s+/g, ' ');
-        const pos = Math.max(0, t.a.map(a => ctx.replace(/\s/g, '').indexOf(a)).find(x => x >= 0) ?? 0);
+        const flat = ctx.replace(/\s/g, ''), pos = Math.max(0, t.a.map(a => a.includes('(?') ? flat.search(new RegExp(a)) : flat.indexOf(a)).find(x => x >= 0) ?? 0);
         let cpos = 0, cnt = 0; for (; cpos < ctx.length && cnt < pos; cpos++) if (!/\s/.test(ctx[cpos])) cnt++;
         const snip = (cpos > 70 ? '…' : '') + ctx.slice(Math.max(0, cpos - 70), cpos + 110) + (cpos + 110 < ctx.length ? '…' : '');
+        if (EXCL[t.n] && EXCL[t.n].test(ctx)) continue;
+        seen.add(key);
         cache.hits.push({ p: t.n, who, role, ids: byName[who] || [], d: c.d, c: c.c, conf: c.id, u: c.u, s: snip });
       }
     }
