@@ -1,10 +1,9 @@
 // 열린재정(기획재정부) 공개 API: 총사업비 관리 대상 사업과 세부사업 예산 중
 // '지금 추진 중인 비슷한 사업'(공항·철도·경기장 등)에 해당하는 것만 골라 저장한다. 평가는 하지 않는다.
-import { writeFileSync, readFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 const KEY = (process.env.OPENFISCAL_KEY || '').trim(), BASE = 'https://openapi.openfiscaldata.go.kr', OUT = process.env.OUT_DIR || 'docs/data';
 if (!KEY) { console.log('OPENFISCAL_KEY가 없어 건너뜁니다.'); process.exit(0); }
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const WORDS = /공항|경전철|도시철도|신공항|트램|모노레일|케이블카|출렁다리|경기장|서킷|리조트|테마파크|박람회|엑스포|운하|뱃길/;
 async function call(code, params, p = 1) {
   const qs = new URLSearchParams({ KEY, Type: 'json', pIndex: p, pSize: 1000, ...params });
   for (let i = 0; i < 3; i++) {
@@ -23,20 +22,23 @@ async function all(code, params, max = 30) {
   const out = []; for (let p = 1; p <= max; p++) { const r = await call(code, params, p); if (!r) break; out.push(...r.rows); if (!r.rows.length || out.length >= r.total) break; await wait(300); }
   return out;
 }
-const year = new Date().getFullYear(), res = { updated: new Date().toISOString(), totalCost: [], budget: [], cols: {} };
-// 1) 총사업비 관리 대상 사업(대형 공사·정보화 사업, 총사업비 변경 이력 포함)
-for (const y of [year, year - 1]) {
-  const rows = await all('TotalProjectCost', { FSCL_YY: y });
-  console.log('총사업비현황', y, rows.length);
-  if (rows.length) { res.cols.totalCost = Object.keys(rows[0]); res.totalCost = rows.filter(r => WORDS.test(Object.values(r).join(' '))).map(r => ({ y, ...r })); res.tcYear = y; break; }
-}
-// 2) 올해 세부사업 예산 중 같은 유형
-for (const y of [year, year - 1]) {
+// 같은 유형(새 공항, 도시철도·경전철) 건설 사업만: 단위사업 이름으로 고른다.
+const GROUPS = [['air', '새 공항 건설', /^신공항건설$/], ['rail', '도시철도·경전철 건설', /^(지하철건설지원|경량전철건설지원|광역철도건설지원)$/]];
+const year = new Date().getFullYear(), byYear = {};
+for (const y of [year + 1, year, year - 1]) {
   const rows = await all('ExpenditureBudgetInit5', { FSCL_YY: y }, 40);
   console.log('세부사업 예산', y, rows.length);
-  if (rows.length) { res.cols.budget = Object.keys(rows[0]); res.budget = rows.filter(r => WORDS.test(`${r.SACTV_NM || ''} ${r.ACTV_NM || ''}`)).map(r => ({ y, ...r })); res.bYear = y; break; }
+  if (rows.length) byYear[y] = rows;
+  if (Object.keys(byYear).length === 2) break;
 }
-console.log('열 이름', JSON.stringify(res.cols));
-console.log('골라낸 사업: 총사업비', res.totalCost.length, '· 세부사업', res.budget.length);
-console.log('예시', JSON.stringify(res.totalCost.slice(0, 2)).slice(0, 800), JSON.stringify(res.budget.slice(0, 2)).slice(0, 800));
-writeFileSync(`${OUT}/fiscal.json`, JSON.stringify(res));
+const ys = Object.keys(byYear).map(Number).sort((a, b) => b - a), Y = ys[0], P = ys[1];
+const amt = r => Math.round(Number(r.Y_YY_DFN_MEDI_KCUR_AMT ?? r.Y_YY_MEDI_KCUR_AMT ?? 0) / 100000); // 천원 → 억원
+const pick = (rows, re) => (rows || []).filter(r => re.test(r.ACTV_NM || '') && !/추진단|공단|운영|노후|증차/.test(r.SACTV_NM || ''));
+const items = [];
+for (const [g, , re] of GROUPS) {
+  const prev = Object.fromEntries(pick(byYear[P], re).map(r => [r.SACTV_NM, amt(r)]));
+  for (const r of pick(byYear[Y], re)) items.push({ g, n: r.SACTV_NM, o: r.OFFC_NM, a: amt(r), p: prev[r.SACTV_NM] ?? null });
+}
+items.sort((a, b) => b.a - a.a);
+writeFileSync(`${OUT}/fiscal.json`, JSON.stringify({ updated: new Date().toISOString(), y: Y, py: P || null, groups: Object.fromEntries(GROUPS.map(([k, n]) => [k, n])), items, src: '열린재정 세부사업 예산편성현황(ExpenditureBudgetInit5)' }));
+console.log('저장', Y, P, items.length, JSON.stringify(items.slice(0, 5)));
