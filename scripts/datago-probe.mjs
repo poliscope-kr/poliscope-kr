@@ -11,3 +11,9 @@ for (const id of ['15158834', '15138721']) {
     const sw = html.match(/swaggerJson\s*=\s*(['"`])([\s\S]{0,400})/); if (sw) console.log('swagger 앞부분', sw[2].slice(0, 400));
   } catch (e) { console.log(id, '실패', e.message); }
 }
+if (KEY.length > 20) {
+  for (const k of [KEY, encodeURIComponent(KEY)]) {
+    const u = `https://apis.data.go.kr/B551178/airport-transport-stats/info?serviceKey=${k}&pageNo=1&numOfRows=5&startDePd=202509&endDePd=202509&routeBe=0&type=json&_type=json`;
+    try { const r = await fetch(u); const t = await r.text(); console.log('시험 호출', k === KEY ? '그대로' : '인코딩', r.status, t.slice(0, 700)); } catch (e) { console.log('시험 실패', e.message); }
+  }
+}
