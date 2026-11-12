@@ -1,7 +1,7 @@
 // 축제 효과 추정: 한국관광공사 통신 빅데이터(지자체별 일별 방문자)와 축제 개최 기간을 맞춰
 // "축제 기간에 평소보다 더 온 외지인·외국인 방문자"를 계산하고, 지자체 행사·축제 예산(지방재정365)과 나란히 놓는다.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-const KEY = (process.env.DATA_GO_KR_KEY || '').trim(), C = 'MobileOS=ETC&MobileApp=poliscope&_type=json', Y = Number(process.env.FEST_YEAR || 2025);
+const KEY = (process.env.DATA_GO_KR_KEY || '').trim(), C = 'MobileOS=ETC&MobileApp=poliscope&_type=json', Y = Number(process.env.FEST_YEAR || new Date().getFullYear()), LASTM = Y < new Date().getFullYear() ? 12 : new Date().getMonth(); // 올해는 지난달까지
 if (KEY.length < 20) { console.log('DATA_GO_KR_KEY가 없어 건너뜁니다.'); process.exit(0); }
 const wait = ms => new Promise(r => setTimeout(r, ms));
 async function get(path, q) {
@@ -15,7 +15,7 @@ mkdirSync('data', { recursive: true });
 // 1) 일별 방문자(외지인+외국인) — 한 번 받은 달은 저장해 두고 다시 받지 않는다
 const VF = `data/visitors-${Y}.json`, V = existsSync(VF) ? JSON.parse(readFileSync(VF, 'utf8')) : { days: {}, names: {}, months: {} };
 let calls = 0;
-for (let m = 1; m <= 12; m++) {
+for (let m = 1; m <= LASTM; m++) {
   const mm = String(m).padStart(2, '0'), last = new Date(Y, m, 0).getDate();
   if (V.months[mm]) continue;
   let ok = true;
@@ -29,7 +29,7 @@ for (let m = 1; m <= 12; m++) {
   console.log('방문자', Y, mm, '누적 호출', calls);
 }
 writeFileSync(VF, JSON.stringify(V));
-if (Object.keys(V.months).length < 12) { console.log('방문자 자료가 아직 다 모이지 않았습니다(한도 초과 등). 다음 실행에 이어서 받습니다.'); }
+if (Object.keys(V.months).length < LASTM) { console.log('방문자 자료가 아직 다 모이지 않았습니다(한도 초과 등). 다음 실행에 이어서 받습니다.'); }
 // 2) 축제 목록
 const fest = [];
 for (let p = 1; p < 20; p++) { const r = await get('KorService2/searchFestival2', `numOfRows=1000&pageNo=${p}&eventStartDate=${Y - 1}0101&arrange=A`); if (!r) break; fest.push(...r.rows); if (p * 1000 >= r.total) break; }
@@ -39,7 +39,7 @@ const out = {};
 for (const f of fest) {
   const code = (f.lDongRegnCd || '') + (f.lDongSignguCd || ''), D = V.days[code]; if (!D || code.length !== 5) continue;
   const s = P(f.eventstartdate), e = P(f.eventenddate), len = Math.round((e - s) / 864e5) + 1;
-  if (s.getFullYear() !== Y || e.getFullYear() !== Y || len < 1 || len > 10) continue; // 열흘 넘는 상설 행사는 뺀다
+  if (s.getFullYear() !== Y || e.getFullYear() !== Y || len < 1 || len > 10 || ymd(e) > `${Y}${String(LASTM).padStart(2, '0')}31`) continue; // 열흘 넘는 상설 행사는 뺀다
   let up = 0, base = 0, act = 0, n = 0;
   for (let t = new Date(s); t <= e; t.setDate(t.getDate() + 1)) {
     const a = D[ymd(t)]; if (a == null) continue;
@@ -52,10 +52,12 @@ for (const f of fest) {
 }
 // 3) 행사·축제 예산과 맞추기 (지방재정365 자치단체 코드 앞 5자리 = 시군구 코드)
 const FE = JSON.parse(readFileSync('docs/data/festival.json', 'utf8')), res = [];
-for (const g of FE.govs) {
-  const code = g.cd ? g.cd.slice(0, 5) : null; if (!code || !out[code] || !g.v[Y]) continue;
-  const o = out[code], up = o.f.reduce((t, x) => t + Math.max(0, x.up), 0);
+const SIDO = { 11: '서울', 26: '부산', 27: '대구', 28: '인천', 29: '광주', 30: '대전', 31: '울산', 36: '세종', 41: '경기', 42: '강원', 51: '강원', 43: '충북', 44: '충남', 45: '전북', 52: '전북', 46: '전남', 47: '경북', 48: '경남', 50: '제주' };
+const byName = {}; for (const g of FE.govs) byName[g.s + '|' + g.n] = g;
+for (const [code, o] of Object.entries(out)) {
+  const sd = SIDO[code.slice(0, 2)], g = byName[sd + '|' + o.n] || byName[sd + '|' + o.n.replace(/\s/g, '')]; if (!g || !g.v[Y]) { console.log('예산 연결 안 됨', code, sd, o.n); continue; }
+  const up = o.f.reduce((t, x) => t + Math.max(0, x.up), 0);
   res.push({ cd: code, n: g.n, s: g.s, bud: g.v[Y][0], nf: o.f.length, up, per: up > 0 ? Math.round(g.v[Y][0] * 1e8 / up) : null, top: o.f.sort((a, b) => b.up - a.up).slice(0, 5) });
 }
-writeFileSync('docs/data/festeffect.json', JSON.stringify({ updated: new Date().toISOString(), y: Y, src: '한국관광공사 빅데이터 지역별 방문자수(KT·SKT 통신 자료) · 한국관광공사 관광정보(축제 기간) · 행정안전부 지방재정365', govs: res }));
+writeFileSync('docs/data/festeffect.json', JSON.stringify({ updated: new Date().toISOString(), y: Y, until: `${Y}.${LASTM}`, nfest: fest.length, src: '한국관광공사 빅데이터 지역별 방문자수(KT·SKT 통신 자료) · 한국관광공사 관광정보(축제 기간) · 행정안전부 지방재정365', govs: res }));
 console.log('결과 지자체', res.length, JSON.stringify(res.slice(0, 3)).slice(0, 800));
