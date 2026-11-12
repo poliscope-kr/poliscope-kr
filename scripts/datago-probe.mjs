@@ -1,5 +1,9 @@
-const K = (process.env.KOSIS_KEY || '').trim(); console.log('KOSIS_KEY 길이', K.length);
-for (const q of ['고용률', '노인 상대적 빈곤율', '교통사고 사망자', '기대수명', '미세먼지 PM2.5 연평균', '합계출산율', '5대 범죄 발생', '국가연구개발 사업 성과', '1인당 국민총소득', '온실가스 배출량']) {
-  try { const r = await fetch(`https://kosis.kr/openapi/statisticsSearch.do?method=getList&apiKey=${encodeURIComponent(K)}&searchNm=${encodeURIComponent(q)}&format=json&jsonVD=Y&resultCount=6`); const j = await r.json();
-    console.log('==', q, Array.isArray(j) ? j.map(x => `${x.ORG_ID}/${x.TBL_ID} ${x.TBL_NM} [${x.STRT_PRD_DE}-${x.END_PRD_DE} ${x.PRD_SE || ''}]`).join(' | ') : JSON.stringify(j).slice(0, 200)); } catch (e) { console.log(q, e.message); }
+const K = (process.env.KOSIS_KEY || '').trim();
+const T = [['101', 'INH_1DA7014S_03'], ['101', 'DT_1HDALF06'], ['101', 'DT_2KAAD31'], ['101', 'DT_2OEHG001'], ['101', 'DT_2UNS0109'], ['101', 'INH_1B81A17'], ['101', 'DT_2AS017']];
+for (const [o, t] of T) {
+  const u = `https://kosis.kr/openapi/Param/statisticsParameterData.do?method=getList&apiKey=${encodeURIComponent(K)}&itmId=ALL&objL1=ALL&objL2=&objL3=&format=json&jsonVD=Y&prdSe=Y&newEstPrdCnt=3&orgId=${o}&tblId=${t}`;
+  try { const j = await (await fetch(u)).json(); if (!Array.isArray(j)) { console.log('==', t, JSON.stringify(j).slice(0, 200)); continue; }
+    const items = [...new Set(j.map(x => x.ITM_NM))], c1 = [...new Set(j.map(x => x.C1_NM))];
+    console.log('==', t, j[0]?.TBL_NM, '행', j.length, '항목', items.slice(0, 12).join('/'), '| 분류', c1.slice(0, 15).join('/'), '| 예', JSON.stringify(j.find(x => /한국|대한민국|전국|계/.test(x.C1_NM || '')) || j[0]).slice(0, 300));
+  } catch (e) { console.log(t, e.message); }
 }
