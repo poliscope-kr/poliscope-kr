@@ -1034,6 +1034,25 @@ function progBox(list){const c={};list.forEach(x=>{const k=progOf(x);c[k]=(c[k]|
   h('div',{class:'legend'},P.map(([k,l,col])=>h('span',null,h('i',{style:'background:'+col}),`${l} ${fmt(c[k])}건 (${Math.round(c[k]/t*100)}%)`))))}
 function dbar(label,done,all,max,c){return h('div',{class:'hb dbar',style:'--c:'+c},h('span',{class:'lb'},label),h('span',{class:'tr','aria-hidden':'true'},h('i',{style:`width:${max?all/max*100:0}%;opacity:.3`}),h('i',{class:'dn',style:`width:${max?done/max*100:0}%`})),h('span',{class:'v'},`${fmt(done)}/${fmt(all)}`))}
 function billCard(x){const u=safe(x.u),p=PROG.find(v=>v[0]===progOf(x));return h(u?'a':'div',{class:'card',href:u,target:u?'_blank':null,rel:u?'noopener':null},h('div',null,x.n),h('div',{class:'small muted'},x.d+' 제출 · '+(x.c||'회부 전')+' · ',h('span',{class:'pill',style:`background:${p[2]};color:#fff`},p[1])))}
+// 정부가 발표한 지출 구조조정(정부 발표 수치 그대로, 반론 함께)
+const RESTR={trend:[['2023',24.1],['2024',22.7],['2025',23.9],['2026',26.9],['2027',38.6]],
+ y27:{total:108,mand:69,disc:38.6,cut:'약 2,100개 사업 폐지(전체 재정사업의 10% 이상)',items:[['교육교부금 제도 개편(의무)',32.5],['지방교부세 제도 개선(의무)',30.5],['연구개발(R&D) 재량 감축',6.2],['농어업 정책자금 통폐합·재생에너지 융자 이차보전 전환',3.8],['구직급여 기준 조정(의무)',1.4],['공적개발원조(ODA)',0.9]]},
+ y26:{total:27,note:'공무원 출장·홍보비 등 경상비 약 500억 원, 단기간 급증한 ODA 등 사업비 1조 6천억 원, 이른바 좀비기업 금융 지원 축소, 교육세 배분 개편 등'},
+ src:[['파이낸셜뉴스 2026.8.31(2027년 예산안)','https://www.fnnews.com/news/202608311406495266'],['이투데이 2025.8.29(2026년 예산안)','https://www.etoday.co.kr/news/view/2501299'],['뉴시스 2026.3.30(편성지침)','https://mobile.newsis.com/view/NISX20260330_0003569186'],['아이뉴스24 2026.11.2(국민의힘 반론)','https://inews24.com/view/2021705']]};
+function restrBox(){const R=RESTR,mx=Math.max(...R.trend.map(x=>x[1]));
+ return h('div',{class:'sec'},h('p',{class:'small',style:'margin:0'},'정부가 예산안을 짜면서 관행적·비효율·중복·집행 부진 사업을 줄이거나 없앤 규모입니다. 정부 발표 수치를 그대로 옮겼고, 평가는 하지 않습니다.'),
+  h('div',{class:'rgn',style:'grid-template-columns:repeat(3,1fr)'},h('div',null,h('b',{class:'tn'},R.y27.total+'조'),h('small',null,'2027년 예산안 구조조정 합계')),h('div',null,h('b',{class:'tn'},R.y27.disc+'조'),h('small',null,'재량지출 감축(역대 최대)')),h('div',null,h('b',{class:'tn'},R.y27.mand+'조'),h('small',null,'의무지출 제도 개선'))),
+  h('div',{class:'small'},'2027년: '+R.y27.cut),
+  h('b',null,'재량지출 감축 규모 추이(조 원)'),h('div',{class:'hbars'},R.trend.map(([y,v])=>{const r=hbar(y+'년 예산',v,mx,y>='2026'?'var(--ac)':'var(--muted)');r.querySelector('.v').textContent=v+'조';return r})),
+  h('div',{class:'small muted'},'2023~2025년은 이전 정부, 2026~2027년은 현 정부가 편성한 예산입니다. 같은 방식으로 발표된 수치를 나란히 놓았습니다.'),
+  h('b',null,'2027년 예산안 주요 구조조정 항목(조 원)'),h('div',{class:'hbars'},R.y27.items.map(([n,v])=>{const r=hbar(n,v,R.y27.items[0][1],'var(--teal)');r.querySelector('.v').textContent=v+'조';return r})),
+  h('div',{class:'small'},'2026년 예산안(27조 원): '+R.y26.note),
+  h('div',{class:'fsbox'},h('b',null,'⚖️ 함께 보아야 할 점'),h('ul',{class:'small',style:'margin:2px 0;padding-left:18px'},
+   h('li',null,'의무지출 감축액(69조 원)은 실제로 쓴 돈이 줄어든 것이 아니라, 제도를 바꾸기 전과 후의 지출 규모를 비교해 계산한 값입니다.'),
+   h('li',null,'구조조정과 별개로 2027년 총지출은 820.9조 원으로 전년보다 12.8% 늘었습니다. 줄인 돈은 다른 사업에 다시 투자됩니다.'),
+   h('li',null,'국민의힘은 2027년 예산안에서 158개 사업을 “혈세 낭비”로 지목하고 30조 원 이상 삭감을 요구했습니다(예: 청년미래적금, 농어촌 기본소득, 지방미래성장지원금).'),
+   h('li',null,'국회 심사를 거치며 금액이 달라질 수 있습니다.'))),
+  h('div',{class:'small muted'},'출처: ',...R.src.flatMap(([t,u],i)=>[i?' · ':'',h('a',{href:u,target:'_blank',rel:'noopener'},t)])))}
 function pres(){
  const G=GOV,b=G?.bills||[],st=G?.status||{},tot=AGENDA.reduce((t,a)=>t+a.s.reduce((x,y)=>x+y[1],0),0),gmax=Math.max(...AGENDA.map(a=>a.s.reduce((x,y)=>x+y[1],0)));
  const goals=h('div',{class:'hbars'},AGENDA.map((a,i)=>{const n=a.s.reduce((x,y)=>x+y[1],0),box=h('div',{class:'strat',hidden:true},a.s.map(([t,v])=>hbar(t,v,Math.max(...a.s.map(x=>x[1])),a.c)));
@@ -1074,6 +1093,7 @@ function pres(){
     h('details',null,h('summary',{class:'small'},`서민 생활 관련 법률안 전체 ${life.length}건 보기`),life.map(billCard)),
     taxB.length?h('details',null,h('summary',{class:'small'},`세법 개정 법률안 ${taxB.length}건 보기`),taxB.map(billCard)):null,
     h('p',{class:'small muted',style:'margin:0'},'법안이 실제로 서민에게 도움이 되는지는 내용과 시행 결과에 따라 다르므로 판단하지 않습니다. 분류 단어는 ',h('a',{href:'#about'},'만든 방식'),'에 공개되어 있으며 빠지거나 잘못 포함될 수 있습니다.')),
+   h('div',{class:'hrow'},h('h2',null,'✂️ 정부 지출 구조조정 (정부 발표)')),restrBox(),
    fin.length?[h('div',{class:'hrow'},h('h2',null,'예산·추경 등 재정 의안')),h('div',{class:'sec'},h('p',{class:'small muted',style:'margin:0'},'민생 대책은 법률보다 예산으로 집행되는 경우가 많습니다. 정부 출범 이후 본회의에서 의결된 예산안과 추가경정예산안입니다.'),
     fin.map(x=>{const u=safe(x.u),t=(x.y||0)+(x.no||0);return h(u?'a':'div',{class:'card',href:u,target:u?'_blank':null,rel:u?'noopener':null},h('div',null,h('b',null,x.n.replace(/\(.*\)\s*$/,''))),t?h('div',{class:'split','aria-hidden':'true'},h('i',{style:`width:${x.y/t*100}%`})):null,h('div',{class:'small muted tn'},`${x.pd} 본회의 ${x.pr}`+(t?` · 찬성 ${x.y} · 반대 ${x.no}`+(x.ab?` · 기권 ${x.ab}`:''):'')))}),
     fund.length?h('p',{class:'small',style:'margin:0'},`기금운용계획(변경)안 ${fund.length}건도 본회의에서 의결되었습니다.`):null,
