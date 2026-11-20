@@ -1,13 +1,13 @@
 {
- "updated": "2026-11-19T22:05:52.038Z",
+ "updated": "2026-11-20T22:04:24.909Z",
  "age": "22",
  "members": 299,
- "bills": 21017,
- "voteBills": 1913,
- "voteBillsTotal": 1913,
+ "bills": 21095,
+ "voteBills": 1918,
+ "voteBillsTotal": 1918,
  "consensus": {
-  "total": 1913,
-  "wide": 1885,
+  "total": 1918,
+  "wide": 1890,
   "split": 116
  },
  "incomplete": false,
